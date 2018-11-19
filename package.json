@@ -1,7 +1,6 @@
 {
   "name": "@screencloud/app-core",
   "description": "",
-  "version": "1.0.0",
   "main": "build/index.js",
   "typings": "src/index.ts",
   "ts:main": "src/index.ts",
