@@ -85,9 +85,9 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
         return this;
     }
 
-    public connect(): Promise<void> {
+    public connect(awaitConnection: boolean = false): Promise<void> {
         return this.bridge
-            .connect((message) => this.receive(message));
+            .connect((message) => this.receive(message), awaitConnection);
     }
 
     public disconnect(): Promise<void> {
