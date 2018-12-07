@@ -8,6 +8,7 @@
     "clean": "rimraf build",
     "prebuild": "npm run clean",
     "build": "tsc",
+    "build:watch": "tsc -watch",
     "tslint": "tslint -p . -t stylish",
     "tslint:fix": "npm run tslint -s -- --fix",
     "test": "jest --coverage",
