@@ -8,3 +8,5 @@ export {
 export {isPostMessageBridgeCommand, PostMessageBridge, PostMessageBridgeCommands} from "./PostMessageBridge";
 
 export {IAppConfig, IAppState, UUID} from "./types/app";
+
+export {ILogMessagePayload, LogLevel, LogMessage} from "./messages/LogMessage";
