@@ -1,5 +1,7 @@
 import {isArray, isFunction, isString, uniq} from "lodash";
 import {IBridge, isBridge} from "./Bridge";
+import {MessageTypes as MessageTypesEnum} from "./messages";
+import {ILogMessagePayload, LogMessage} from "./messages/LogMessage";
 import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
 
 export interface IMessage<Payload = any, MessageType = any, Meta = any> {
@@ -25,6 +27,10 @@ export interface IMessageApp<MessageTypes = any> {
     connect(): Promise<void>;
 
     disconnect(): Promise<void>;
+
+    emitLog(payload: ILogMessagePayload): void;
+
+    onLog(handler: (payload: ILogMessagePayload) => void): this;
 }
 
 export function isValidMessageTypeArray(obj: any): obj is string[] {
@@ -109,6 +115,17 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
             throw new Error("invalid message");
         }
         return this.bridge.request<Message, Result>(message);
+    }
+
+    public emitLog(payload: ILogMessagePayload): void {
+        this.emit<LogMessage>({
+            payload,
+            type: MessageTypesEnum.log,
+        });
+    }
+
+    public onLog(handler: (payload: ILogMessagePayload) => void): this {
+        return this.on(MessageTypesEnum.log, handler);
     }
 
     protected receive(message: IMessage): undefined | Promise<any> {

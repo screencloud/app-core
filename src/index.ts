@@ -7,4 +7,4 @@ export {
 } from "./Bridge";
 export {isPostMessageBridgeCommand, PostMessageBridge, PostMessageBridgeCommands} from "./PostMessageBridge";
 
-export { IAppConfig, IAppState, UUID } from "./types/app";
+export {IAppConfig, IAppState, UUID} from "./types/app";
