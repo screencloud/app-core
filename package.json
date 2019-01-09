@@ -2,8 +2,7 @@
   "name": "@screencloud/app-core",
   "description": "",
   "main": "build/index.js",
-  "typings": "src/index.ts",
-  "ts:main": "src/index.ts",
+  "typings": "build/index.d.ts",
   "scripts": {
     "clean": "rimraf build",
     "prebuild": "npm run clean",
@@ -18,7 +17,6 @@
   "author": "",
   "license": "ISC",
   "files": [
-    "src/**/!(*.test).@(ts|tsx)",
     "build/**/!(*.test).@(js|jsx)"
   ],
   "devDependencies": {
