@@ -17,7 +17,7 @@
   "author": "",
   "license": "ISC",
   "files": [
-    "build/**/!(*.test).@(js|jsx)"
+    "build/**/!(*.test).@(js|jsx|ts|tsx)"
   ],
   "devDependencies": {
     "@types/jest": "^23.3.9",
