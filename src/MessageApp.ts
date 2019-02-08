@@ -4,8 +4,8 @@ import {MessageTypes as MessageTypesEnum} from "./messages";
 import {ILogMessagePayload, LogMessage} from "./messages/LogMessage";
 import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
 
-export interface IMessage<Payload = any, MessageType = any, Meta = any> {
-    type: string;
+export interface IMessage<Payload = any, Type = any, Meta = any> {
+    type: MessageType;
     payload?: Payload;
     meta?: Meta;
 }
