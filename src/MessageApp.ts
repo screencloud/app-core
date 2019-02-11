@@ -42,30 +42,14 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
 
     public readonly bridge: IBridge;
     protected handlers: MessageHandlers;
-    protected incMessageTypes: string[];
-    protected outMessageTypes: string[];
 
     constructor(
-        incMessageTypes: string[],
-        outMessageTypes: string[],
         handlers: MessageHandlers,
         bridge: IBridge,
     ) {
-        // Incoming Message Types
-        if (!isValidMessageTypeArray(incMessageTypes)) {
-            throw new Error("incMessageTypes must be a unique string-array");
-        }
-        this.incMessageTypes = incMessageTypes;
-
-        // Outgoing Message Types
-        if (!isValidMessageTypeArray(outMessageTypes)) {
-            throw new Error("outMessageTypes must be a unique string-array");
-        }
-        this.outMessageTypes = outMessageTypes;
-
         // Handlers (Incoming only)
-        if (!isValidMessageHandlerCollection(handlers, this.incMessageTypes)) {
-            throw new Error("handlers must be undefined or a plain object implementing IMessageAppHandlers");
+        if (!isValidMessageHandlerCollection(handlers)) {
+            throw new Error("all handlers must be undefined or function");
         }
         this.handlers = {
             ...(handlers as any),
@@ -79,11 +63,6 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     }
 
     public on(messageType: string, handler: ((payload: void | any) => void) | undefined): this {
-
-        if (!this.incMessageTypes.includes(messageType)) {
-            throw new Error(`unknown message type: ${messageType}`);
-        }
-
         if (handler !== undefined && !isFunction(handler)) {
             throw new Error("handler must be callable or undefined");
         }
@@ -106,10 +85,6 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
             throw new Error("invalid message");
         }
 
-        if (!this.outMessageTypes.includes(message.type)) {
-            throw new Error(`unknown message type: ${message.type}`);
-        }
-
         return this.bridge.send<Message>({
             data: message,
         });
@@ -118,10 +93,6 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     public request<Message extends IMessage = any, Result = any>(message: Message): Promise<Result> {
         if (!isMessage(message)) {
             throw new Error("invalid message");
-        }
-
-        if (!this.outMessageTypes.includes(message.type)) {
-            throw new Error(`unknown message type: ${message.type}`);
         }
 
         return this.bridge.request<Message, Result>(message);
