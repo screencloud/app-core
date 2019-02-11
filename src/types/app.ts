@@ -1,4 +1,3 @@
-export type UUID = string;
 
 export interface IAppConfig {
   [key: string]: any;

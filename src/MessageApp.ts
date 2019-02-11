@@ -5,7 +5,7 @@ import {ILogMessagePayload, LogMessage} from "./messages/LogMessage";
 import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
 
 export interface IMessage<Payload = any, Type = any, Meta = any> {
-    type: MessageType;
+    type: Type;
     payload?: Payload;
     meta?: Meta;
 }
