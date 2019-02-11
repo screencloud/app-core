@@ -6,7 +6,3 @@ export {
     IBridgeMessage, isBridge, isBridgeOptions, isBridgeMessage, IBridgeOptions, IBridge, Bridge, BridgeState,
 } from "./Bridge";
 export {isPostMessageBridgeCommand, PostMessageBridge, PostMessageBridgeCommands} from "./PostMessageBridge";
-
-export {IAppConfig, IAppState} from "./types/app";
-
-export {ILogMessagePayload, LogLevel, LogMessage} from "./messages/LogMessage";

@@ -19,9 +19,6 @@ test("isValidMessageTypeArray()", () => {
     expect(isValidMessageTypeArray(15)).toBeFalsy();
     expect(isValidMessageTypeArray(undefined)).toBeFalsy();
 
-    // empty
-    expect(isValidMessageTypeArray([])).toBeFalsy();
-
     // duplicates
     expect(isValidMessageTypeArray(["foo", "foo"])).toBeFalsy();
 
@@ -49,14 +46,12 @@ test(`new MessageApp() constructor`, () => {
     expect(() => new anyMessageApp()).toThrow();
 
     // broken bridge
-    expect(() => new anyMessageApp(["foo"], fakeHandlers, {})).toThrow();
-
-    // empty messageTypes
-    expect(() => new anyMessageApp([], fakeHandlers, fakeBridge)).toThrow();
+    expect(() => new anyMessageApp([], [], fakeHandlers, {})).toThrow();
 
     // invalid handlers
     expect(() => anyMessageApp(
         ["bar"],
+        [],
         {
             bar: () => undefined,
             foo: () => undefined, // <= invalid handler
@@ -67,6 +62,7 @@ test(`new MessageApp() constructor`, () => {
     // should work!
     expect(() => new MessageApp(
         ["bar"],
+        [],
         {
             bar: () => undefined,
         },
@@ -75,7 +71,7 @@ test(`new MessageApp() constructor`, () => {
 });
 
 test("MessageApp.connect() relays bridge.connect and injects a handler", (done) => {
-    const app = new MessageApp(["foo"], {}, {
+    const app = new MessageApp(["foo"], [], {}, {
         ...fakeBridge,
         connect: (handler: any) => {
             expect(isFunction(handler)).toBeTruthy();
@@ -87,7 +83,7 @@ test("MessageApp.connect() relays bridge.connect and injects a handler", (done) 
 });
 
 test("MessageApp.on()", (done) => {
-    const app = new MessageApp(["foo", "bar"], {}, fakeBridge);
+    const app = new MessageApp(["foo", "bar"], [], {}, fakeBridge);
 
     // invalid messageType
     expect(() => {
@@ -110,7 +106,7 @@ test("MessageApp.on()", (done) => {
 });
 
 test("MessageApp.receive()", (done) => {
-    const app = new MessageApp(["foo", "bar"], {}, fakeBridge);
+    const app = new MessageApp(["foo", "bar"], [], {}, fakeBridge);
 
     // invalid message
     expect(() => {
@@ -138,7 +134,7 @@ test("MessageApp.receive()", (done) => {
 });
 
 test("MessageApp.isConnected()", () => {
-    const app = new MessageApp(["foo"], {}, {
+    const app = new MessageApp(["foo"], [], {}, {
         ...fakeBridge,
         isConnected: 17 as any,
     });
@@ -151,7 +147,7 @@ test("MessageApp.emit()", () => {
         payload: 666,
         type: "foo" as any,
     };
-    const app = new MessageApp(["foo"], {}, {
+    const app = new MessageApp([], ["foo"], {}, {
         ...fakeBridge,
         send: (message: any) => {
             expect(message).toEqual({data: fakeMessage});
@@ -166,7 +162,7 @@ test("MessageApp.request()", async (done) => {
         payload: 666,
         type: "foo" as any,
     };
-    const app = new MessageApp(["foo"], {}, {
+    const app = new MessageApp([], ["foo"], {}, {
         ...fakeBridge,
         request: (message) => {
             expect(message).toEqual(fakeMessage);
@@ -181,14 +177,14 @@ test("MessageApp.request()", async (done) => {
 });
 
 test("MessageApp.request() throws", () => {
-    const app = new MessageApp(["foo"], {}, fakeBridge);
+    const app = new MessageApp(["foo"], [], {}, fakeBridge);
 
     // invalid messages
     expect(() => app.request("notAMessage" as any)).toThrow();
 });
 
 test("MessageApp.emit() throws", () => {
-    const app = new MessageApp(["foo"], {}, fakeBridge);
+    const app = new MessageApp(["foo"], [], {}, fakeBridge);
 
     // invalid messages
     expect(() => app.emit("notAMessage" as any)).toThrow();
