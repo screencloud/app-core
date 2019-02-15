@@ -20,6 +20,7 @@ export class PostMessageBridge extends Bridge {
     constructor(
         protected targetWindow: Window = window.opener || window.parent || window.top,
         protected sourceWindow: Window = window,
+        timeout: number = 1000,
     ) {
         super({
             connect: (awaitConnect?: boolean) => new Promise((resolve, reject) => {
@@ -38,7 +39,7 @@ export class PostMessageBridge extends Bridge {
             send: (request: string) => {
                 this.targetWindow.postMessage(request, "*");
             },
-            timeout: 1000,
+            timeout,
         });
 
         if (!this.targetWindow || !this.targetWindow.postMessage) {
