@@ -1,5 +1,10 @@
 import {IBridgeMessage} from "./Bridge";
-import {isPostMessageBridgeCommand, PostMessageBridge, PostMessageBridgeCommands} from "./PostMessageBridge";
+import {
+    encodePostMessageBridgeCommand,
+    PostMessageBridge,
+    PostMessageBridgeCommandTypes,
+    tryDecodePostMessageBridgeCommand,
+} from "./PostMessageBridge";
 
 import {EventEmitter} from "events";
 
@@ -27,16 +32,44 @@ class FakeWindow extends EventEmitter {
 
 const makeWindow = (): Window => (new FakeWindow() as any);
 
-test("isPostMessageBridgeCommand()", () => {
+test("encodePostMessageBridgeCommand()", () => {
+    expect(encodePostMessageBridgeCommand("foo" as any)).toEqual(`___{"type":"foo"}`);
+    expect(encodePostMessageBridgeCommand("foo" as any, 17)).toEqual(`___{"type":"foo","data":17}`);
+
+    expect(() => encodePostMessageBridgeCommand(17 as any)).toThrow();
+    expect(() => encodePostMessageBridgeCommand(undefined as any)).toThrow();
+    expect(() => encodePostMessageBridgeCommand({} as any)).toThrow();
+});
+
+test("tryDecodePostMessageBridgeCommand()", () => {
     // false
-    expect(isPostMessageBridgeCommand(null)).toBeFalsy();
-    expect(isPostMessageBridgeCommand({})).toBeFalsy();
-    expect(isPostMessageBridgeCommand("foo")).toBeFalsy();
-    expect(isPostMessageBridgeCommand(JSON.stringify(PostMessageBridgeCommands.Connect)))
-        .toBeFalsy();
+    expect(tryDecodePostMessageBridgeCommand(null)).toBeFalsy();
+    expect(tryDecodePostMessageBridgeCommand({})).toBeFalsy();
+    expect(tryDecodePostMessageBridgeCommand("foo")).toBeFalsy();
+    expect(
+        tryDecodePostMessageBridgeCommand(JSON.stringify(PostMessageBridgeCommandTypes.Connect)),
+    ).toBeFalsy();
+    expect(
+        tryDecodePostMessageBridgeCommand(JSON.stringify({type: PostMessageBridgeCommandTypes.Connect})),
+    ).toBeFalsy();
 
     // true
-    expect(isPostMessageBridgeCommand(PostMessageBridgeCommands.Connect)).toBeTruthy();
+    const validCommand = `___${JSON.stringify({
+        type: PostMessageBridgeCommandTypes.Connect,
+    })}`;
+    expect(tryDecodePostMessageBridgeCommand(validCommand)).toEqual({
+        type: PostMessageBridgeCommandTypes.Connect,
+    });
+
+    const validCommand2 = `___${JSON.stringify({
+        data: {foo: true, bar: 42},
+        type: PostMessageBridgeCommandTypes.ConnectSuccess,
+    })}`;
+    expect(tryDecodePostMessageBridgeCommand(validCommand2)).toEqual({
+        data: {foo: true, bar: 42},
+        type: PostMessageBridgeCommandTypes.ConnectSuccess,
+    });
+
 });
 
 describe("PostMessageBridge", () => {
@@ -54,19 +87,21 @@ describe("PostMessageBridge", () => {
 
         targetWindow.addEventListener("message", (event: MessageEvent) => {
             const {data} = event;
+            const command = tryDecodePostMessageBridgeCommand(data);
 
-            if (data === PostMessageBridgeCommands.Connect) {
-                expect(stage).toBe("connect");
-
+            if (command && command.type === PostMessageBridgeCommandTypes.Connect) {
                 // step 2: receive Connect command and return success after delay
                 // event should then be picked up by PMBs handler.
                 setTimeout(() => {
+                    expect(stage).toBe("connect");
                     stage = "send";
                     sourceWindow.postMessage(
-                        PostMessageBridgeCommands.ConnectSuccess, "*", targetWindow as any,
+                        encodePostMessageBridgeCommand(PostMessageBridgeCommandTypes.ConnectSuccess),
+                        "*",
+                        targetWindow as any,
                     );
                 }, 50);
-            } else if (data === PostMessageBridgeCommands.Disconnect) {
+            } else if (command && command.type === PostMessageBridgeCommandTypes.Disconnect) {
                 // step 6: receive disconnect
                 expect(stage).toBe("disconnect");
                 stage = "done";
