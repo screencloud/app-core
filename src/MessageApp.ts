@@ -110,11 +110,14 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
         });
     }
 
-    public request<Message extends IMessage = any, Result = any>(message: Message): Promise<Result> {
+    public request<Message extends IMessage = any, Result = any>(
+        message: Message,
+        disableTimeout: boolean = false,
+    ): Promise<Result> {
         if (!isMessage(message)) {
             throw new Error("invalid message");
         }
-        return this.bridge.request<Message, Result>(message);
+        return this.bridge.request<Message, Result>(message, disableTimeout);
     }
 
     public emitLog(payload: ILogMessagePayload): void {

@@ -26,6 +26,7 @@ export interface IBridge {
      */
     request<Message extends IMessage = any, Result = any>(
         message: Message,
+        disableTimeout: boolean,
     ): Promise<Result>;
 }
 
@@ -179,6 +180,7 @@ export class Bridge implements IBridge {
 
     public request<Data = any, Result = any>(
         data: Data,
+        disableTimeout: boolean = false,
     ): Promise<Result> {
         const requestId = ++this.lastRequestId;
 
@@ -195,11 +197,13 @@ export class Bridge implements IBridge {
                 },
             };
 
-            setTimeout(() => {
-                if (this.promiseResolvers[requestId]) {
-                    this.promiseResolvers[requestId].reject("timeout");
-                }
-            }, this.options.timeout);
+            if (!disableTimeout) {
+                setTimeout(() => {
+                    if (this.promiseResolvers[ requestId ]) {
+                        this.promiseResolvers[ requestId ].reject("timeout");
+                    }
+                }, this.options.timeout);
+            }
 
             this.options
                 .send(this.encode({
