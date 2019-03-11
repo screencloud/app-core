@@ -48,7 +48,6 @@ import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
 });
 
 // isValidMessageHandlerCollection => true
-const validKeys = ["foo", "bar"];
 [
     // empty is fine
     {},
@@ -62,7 +61,7 @@ const validKeys = ["foo", "bar"];
     },
 ].forEach((obj, i) => {
     test(`testisValidMessageHandlerCollection() should return true #${i}`, () => {
-        expect(isValidMessageHandlerCollection(obj, validKeys)).toBeTruthy();
+        expect(isValidMessageHandlerCollection(obj)).toBeTruthy();
     });
 });
 // isValidMessageHandlerCollection => false
@@ -73,9 +72,6 @@ const validKeys = ["foo", "bar"];
         fish: false,
     },
     {
-        fish: () => true,
-    },
-    {
         foo: 17,
     },
     {
@@ -84,6 +80,6 @@ const validKeys = ["foo", "bar"];
     },
 ].forEach((obj, i) => {
     test(`testisValidMessageHandlerCollection() should return false #${i}`, () => {
-        expect(isValidMessageHandlerCollection(obj, validKeys)).toBeFalsy();
+        expect(isValidMessageHandlerCollection(obj)).toBeFalsy();
     });
 });

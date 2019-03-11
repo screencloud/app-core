@@ -1,14 +1,30 @@
 import {isString} from "lodash";
 import {Bridge, BridgeState} from "./Bridge";
 
-export enum PostMessageBridgeCommands {
+export enum PostMessageBridgeCommandTypes {
     Connect = "CONNECT",
     ConnectSuccess = "CONNECT_SUCCESS",
     Disconnect = "DISCONNECT",
 }
 
-export function isPostMessageBridgeCommand(obj: any): obj is PostMessageBridgeCommands {
-    return isString(obj) && Object.values(PostMessageBridgeCommands).includes(obj);
+export interface IPostMessageBridgeCommand<T = never> {
+    type: PostMessageBridgeCommandTypes;
+    data: T;
+}
+
+export function tryDecodePostMessageBridgeCommand(obj: any): undefined | IPostMessageBridgeCommand {
+    if (!isString(obj) || !obj.startsWith("___")) {
+        return undefined;
+    }
+
+    return JSON.parse(obj.substr(3));
+}
+
+export function encodePostMessageBridgeCommand(type: PostMessageBridgeCommandTypes, data?: any): string {
+    if (!type || !isString(type)) {
+        throw new Error(`command must be a string`);
+    }
+    return `___${JSON.stringify({type, data})}`;
 }
 
 export class PostMessageBridge extends Bridge {
@@ -20,6 +36,7 @@ export class PostMessageBridge extends Bridge {
     constructor(
         protected targetWindow: Window = window.opener || window.parent || window.top,
         protected sourceWindow: Window = window,
+        timeout: number = 1000,
     ) {
         super({
             connect: (awaitConnect?: boolean) => new Promise((resolve, reject) => {
@@ -27,22 +44,56 @@ export class PostMessageBridge extends Bridge {
                 this.resolveConnect = resolve;
                 if (!awaitConnect) {
                     setTimeout(() => reject("timeout"), this.options.timeout);
-                    this.options.send(PostMessageBridgeCommands.Connect);
+                    this.sendCommand(PostMessageBridgeCommandTypes.Connect);
                 }
             }),
             disconnect: () => new Promise((resolve) => {
                 this.removeListener();
-                this.options.send(PostMessageBridgeCommands.Disconnect);
+                this.sendCommand(PostMessageBridgeCommandTypes.Disconnect);
                 resolve();
             }),
             send: (request: string) => {
                 this.targetWindow.postMessage(request, "*");
             },
-            timeout: 1000,
+            timeout,
         });
 
         if (!this.targetWindow || !this.targetWindow.postMessage) {
             throw new Error("invalid argument targetWindow");
+        }
+    }
+
+    protected sendCommand(type: PostMessageBridgeCommandTypes, data?: any) {
+        this.options.send(encodePostMessageBridgeCommand(type, data));
+    }
+
+    protected handleConnectCommand() {
+        if (this.state === BridgeState.AwaitingConnect && this.resolveConnect) {
+            this.sendCommand(PostMessageBridgeCommandTypes.ConnectSuccess);
+            this.resolveConnect();
+        }
+    }
+
+    protected handleConnectSuccessCommand() {
+        if (this.state === BridgeState.Connecting && this.resolveConnect) {
+            this.resolveConnect();
+        }
+    }
+
+    protected receiveCommand(command: IPostMessageBridgeCommand) {
+
+        const {type} = command;
+
+        if (!type || !Object.values(PostMessageBridgeCommandTypes).includes(type)) {
+            throw new Error(`Unrecognized command received: "${type}"`);
+        }
+
+        if (type === PostMessageBridgeCommandTypes.Connect) {
+            this.handleConnectCommand();
+        } else if (type === PostMessageBridgeCommandTypes.ConnectSuccess) {
+            this.handleConnectSuccessCommand();
+        } else if (type === PostMessageBridgeCommandTypes.Disconnect) {
+            this.handleDisconnect();
         }
     }
 
@@ -54,25 +105,10 @@ export class PostMessageBridge extends Bridge {
 
         const {data} = event;
 
-        if (isPostMessageBridgeCommand(data)) {
-            if (
-                data === PostMessageBridgeCommands.Connect
-                && this.state === BridgeState.AwaitingConnect
-                && this.resolveConnect
-            ) {
-                this.options.send(PostMessageBridgeCommands.ConnectSuccess);
-                this.resolveConnect();
-            }
-            if (
-                data === PostMessageBridgeCommands.ConnectSuccess
-                && this.state === BridgeState.Connecting
-                && this.resolveConnect
-            ) {
-                this.resolveConnect();
-            }
-            if (data === PostMessageBridgeCommands.Disconnect) {
-                this.handleDisconnect();
-            }
+        const command = tryDecodePostMessageBridgeCommand(data);
+
+        if (command) {
+            this.receiveCommand(command);
         } else {
             this.receive(data);
         }

@@ -1,11 +1,9 @@
 import {isArray, isFunction, isString, uniq} from "lodash";
 import {IBridge, isBridge} from "./Bridge";
-import {MessageTypes as MessageTypesEnum} from "./messages";
-import {ILogMessagePayload, LogMessage} from "./messages/LogMessage";
 import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
 
-export interface IMessage<Payload = any, MessageType = any, Meta = any> {
-    type: string;
+export interface IMessage<Payload = any, Type = any, Meta = any> {
+    type: Type;
     payload?: Payload;
     meta?: Meta;
 }
@@ -27,15 +25,10 @@ export interface IMessageApp<MessageTypes = any> {
     connect(): Promise<void>;
 
     disconnect(): Promise<void>;
-
-    emitLog(payload: ILogMessagePayload): void;
-
-    onLog(handler: (payload: ILogMessagePayload) => void): this;
 }
 
 export function isValidMessageTypeArray(obj: any): obj is string[] {
     return isArray(obj)
-        && obj.length > 0
         && uniq(obj).length === obj.length
         && obj.every((v) => v && isString(v) && (/^[a-zA-Z_]+$/g).test(v));
 }
@@ -49,22 +42,14 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
 
     public readonly bridge: IBridge;
     protected handlers: MessageHandlers;
-    protected messageTypes: string[];
 
     constructor(
-        messageTypes: string[],
         handlers: MessageHandlers,
         bridge: IBridge,
     ) {
-        // Message Types
-        if (!isValidMessageTypeArray(messageTypes)) {
-            throw new Error("messageTypes must be a non-empty non-duplicate string-array");
-        }
-        this.messageTypes = messageTypes;
-
-        // Handlers
-        if (!isValidMessageHandlerCollection(handlers, this.messageTypes)) {
-            throw new Error("handlers must be undefined or a plain object implementing IMessageAppHandlers");
+        // Handlers (Incoming only)
+        if (!isValidMessageHandlerCollection(handlers)) {
+            throw new Error("all handlers must be undefined or function");
         }
         this.handlers = {
             ...(handlers as any),
@@ -78,11 +63,6 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     }
 
     public on(messageType: string, handler: ((payload: void | any) => void) | undefined): this {
-
-        if (!this.messageTypes.includes(messageType)) {
-            throw new Error(`unknown message type: ${messageType}`);
-        }
-
         if (handler !== undefined && !isFunction(handler)) {
             throw new Error("handler must be callable or undefined");
         }
@@ -117,18 +97,8 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
         if (!isMessage(message)) {
             throw new Error("invalid message");
         }
+
         return this.bridge.request<Message, Result>(message, disableTimeout);
-    }
-
-    public emitLog(payload: ILogMessagePayload): void {
-        this.emit<LogMessage>({
-            payload,
-            type: MessageTypesEnum.log,
-        });
-    }
-
-    public onLog(handler: (payload: ILogMessagePayload) => void): this {
-        return this.on(MessageTypesEnum.log, handler);
     }
 
     protected receive(message: IMessage): undefined | Promise<any> {

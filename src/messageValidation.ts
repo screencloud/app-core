@@ -4,11 +4,10 @@ import {IMessage, IMessageHandlers} from "./MessageApp";
 /**
  * Returns true if obj is a plain object implementing IMessageAppHandlers
  */
-export function isValidMessageHandlerCollection(obj: any, validKeys: string[]): obj is IMessageHandlers {
+export function isValidMessageHandlerCollection(obj: any): obj is IMessageHandlers {
     return isPlainObject(obj)
         && Object.keys(obj).every((key) => {
-            return validKeys.includes(key)
-                && (obj[key] === undefined || isFunction(obj[key]));
+            return obj[key] === undefined || isFunction(obj[key]);
         });
 }
 
