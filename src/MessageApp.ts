@@ -1,5 +1,5 @@
 import {isArray, isFunction, isString, uniq} from "lodash";
-import {IBridge, isBridge} from "./Bridge";
+import {IBridge, IBridgeOptions, isBridge} from "./Bridge";
 import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
 
 export interface IMessage<Payload = any, Type = any, Meta = any> {
@@ -20,7 +20,7 @@ export interface IMessageApp<MessageTypes = any> {
 
     request<Message extends IMessage = IMessage, Result = any>(
         message: IMessage,
-        overrideTimeout?: number,
+        overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result>;
 
     on(messageType: string, handler: ((payload: void | any) => void) | undefined): this;
@@ -95,13 +95,13 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
 
     public request<Message extends IMessage = any, Result = any>(
         message: Message,
-        overrideTimeout?: number,
+        overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result> {
         if (!isMessage(message)) {
             throw new Error("invalid message");
         }
 
-        return this.bridge.request<Message, Result>(message, overrideTimeout);
+        return this.bridge.request<Message, Result>(message, overrideOptions);
     }
 
     protected receive(message: IMessage): undefined | Promise<any> {
