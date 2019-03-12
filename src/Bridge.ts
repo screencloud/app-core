@@ -26,7 +26,7 @@ export interface IBridge {
      */
     request<Message extends IMessage = any, Result = any>(
         message: Message,
-        disableTimeout: boolean,
+        overrideTimeout?: number,
     ): Promise<Result>;
 }
 
@@ -180,7 +180,7 @@ export class Bridge implements IBridge {
 
     public request<Data = any, Result = any>(
         data: Data,
-        disableTimeout: boolean = false,
+        overrideTimeout?: number,
     ): Promise<Result> {
         const requestId = ++this.lastRequestId;
 
@@ -197,12 +197,12 @@ export class Bridge implements IBridge {
                 },
             };
 
-            if (!disableTimeout) {
+            if (overrideTimeout !== -1) {
                 setTimeout(() => {
                     if (this.promiseResolvers[ requestId ]) {
                         this.promiseResolvers[ requestId ].reject("timeout");
                     }
-                }, this.options.timeout);
+                }, typeof overrideTimeout === "number" ? overrideTimeout : this.options.timeout);
             }
 
             this.options

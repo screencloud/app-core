@@ -18,7 +18,10 @@ export interface IMessageApp<MessageTypes = any> {
 
     emit<Message extends IMessage = IMessage>(message: IMessage): void;
 
-    request<Message extends IMessage = IMessage, Result = any>(message: IMessage): Promise<Result>;
+    request<Message extends IMessage = IMessage, Result = any>(
+        message: IMessage,
+        overrideTimeout?: number,
+    ): Promise<Result>;
 
     on(messageType: string, handler: ((payload: void | any) => void) | undefined): this;
 
@@ -92,13 +95,13 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
 
     public request<Message extends IMessage = any, Result = any>(
         message: Message,
-        disableTimeout: boolean = false,
+        overrideTimeout?: number,
     ): Promise<Result> {
         if (!isMessage(message)) {
             throw new Error("invalid message");
         }
 
-        return this.bridge.request<Message, Result>(message, disableTimeout);
+        return this.bridge.request<Message, Result>(message, overrideTimeout);
     }
 
     protected receive(message: IMessage): undefined | Promise<any> {
