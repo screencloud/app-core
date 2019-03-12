@@ -183,6 +183,10 @@ export class Bridge implements IBridge {
         overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result> {
         const requestId = ++this.lastRequestId;
+        const options = {
+            ...this.options,
+            ...overrideOptions,
+        };
 
         // fire and return promise
         return new Promise((resolve, reject) => {
@@ -197,14 +201,12 @@ export class Bridge implements IBridge {
                 },
             };
 
-            const overrideTimeout = overrideOptions ? overrideOptions.timeout : undefined;
-
-            if (overrideTimeout !== -1) {
+            if (options.timeout !== -1) {
                 setTimeout(() => {
                     if (this.promiseResolvers[ requestId ]) {
                         this.promiseResolvers[ requestId ].reject("timeout");
                     }
-                }, typeof overrideTimeout === "number" ? overrideTimeout : this.options.timeout);
+                }, options.timeout);
             }
 
             this.options
