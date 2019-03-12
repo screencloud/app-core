@@ -26,6 +26,7 @@ export interface IBridge {
      */
     request<Message extends IMessage = any, Result = any>(
         message: Message,
+        overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result>;
 }
 
@@ -179,8 +180,13 @@ export class Bridge implements IBridge {
 
     public request<Data = any, Result = any>(
         data: Data,
+        overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result> {
         const requestId = ++this.lastRequestId;
+        const options = {
+            ...this.options,
+            ...overrideOptions,
+        };
 
         // fire and return promise
         return new Promise((resolve, reject) => {
@@ -195,11 +201,13 @@ export class Bridge implements IBridge {
                 },
             };
 
-            setTimeout(() => {
-                if (this.promiseResolvers[requestId]) {
-                    this.promiseResolvers[requestId].reject("timeout");
-                }
-            }, this.options.timeout);
+            if (options.timeout !== -1) {
+                setTimeout(() => {
+                    if (this.promiseResolvers[ requestId ]) {
+                        this.promiseResolvers[ requestId ].reject("timeout");
+                    }
+                }, options.timeout);
+            }
 
             this.options
                 .send(this.encode({
