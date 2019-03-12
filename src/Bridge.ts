@@ -204,7 +204,7 @@ export class Bridge implements IBridge {
                     if (this.promiseResolvers[ requestId ]) {
                         this.promiseResolvers[ requestId ].reject("timeout");
                     }
-                }, typeof overrideOptions === "number" ? overrideTimeout : this.options.timeout);
+                }, typeof overrideTimeout === "number" ? overrideTimeout : this.options.timeout);
             }
 
             this.options
