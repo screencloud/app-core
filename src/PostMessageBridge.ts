@@ -42,8 +42,8 @@ export class PostMessageBridge extends Bridge {
             connect: (awaitConnect?: boolean) => new Promise((resolve, reject) => {
                 this.addListener();
                 this.resolveConnect = resolve;
+                setTimeout(() => reject("timeout"), this.options.timeout);
                 if (!awaitConnect) {
-                    setTimeout(() => reject("timeout"), this.options.timeout);
                     this.sendCommand(PostMessageBridgeCommandTypes.Connect);
                 }
             }),
