@@ -115,15 +115,22 @@ test("MessageApp.receive()", (done) => {
         });
     }).not.toThrow();
 
-    // set a valid handler and replace it with another one
-    app.on("foo", () => { throw new Error("should not be called"); });
+    // set a handler and remove it again
+    const throwingHandler = () => { throw new Error("should not be called"); };
+    app.on("foo", throwingHandler);
+    app.off(throwingHandler);
+
+    // add a good handler
     app.on("foo", (payload) => {
         expect(payload).toBe("bar");
-        done();
+        return Promise.resolve("baz");
     });
     (app as any).receive({
         payload: "bar",
         type: "foo",
+    }).then((value: any) => {
+        expect(value).toEqual("baz");
+        done();
     });
 });
 
