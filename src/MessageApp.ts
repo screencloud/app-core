@@ -144,7 +144,6 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
                         }
                     }
                 }
-                return Promise.reject("unhandled");
             }
         } catch (e) {
             // todo do something with caught exceptions
