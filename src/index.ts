@@ -1,3 +1,6 @@
+// tslint:disable-next-line: no-submodule-imports
+import "ts-polyfill/lib/es2017-object";
+
 // App
 export {IMessageApp, MessageApp, IMessage, IMessageHandlers} from "./MessageApp";
 
