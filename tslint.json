@@ -3,6 +3,7 @@
     "tslint:latest"
   ],
   "rules": {
-    "no-implicit-dependencies": [true, "dev"]
+    "no-implicit-dependencies": [true, "dev"],
+    "variable-name": [true, "allow-leading-underscore"]
   }
 }

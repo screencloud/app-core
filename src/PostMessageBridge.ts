@@ -32,6 +32,11 @@ export class PostMessageBridge extends Bridge {
     protected eventListener?: EventListenerOrEventListenerObject = undefined;
 
     protected resolveConnect?: () => void = undefined;
+    private _origin?: string;
+
+    public get origin() {
+        return this._origin;
+    }
 
     constructor(
         protected targetWindow: Window = window.opener || window.parent || window.top,
@@ -67,20 +72,22 @@ export class PostMessageBridge extends Bridge {
         this.options.send(encodePostMessageBridgeCommand(type, data));
     }
 
-    protected handleConnectCommand() {
+    protected handleConnectCommand(origin: string) {
         if (this.state === BridgeState.AwaitingConnect && this.resolveConnect) {
             this.sendCommand(PostMessageBridgeCommandTypes.ConnectSuccess);
+            this._origin = origin;
             this.resolveConnect();
         }
     }
 
-    protected handleConnectSuccessCommand() {
+    protected handleConnectSuccessCommand(origin: string) {
         if (this.state === BridgeState.Connecting && this.resolveConnect) {
+            this._origin = origin;
             this.resolveConnect();
         }
     }
 
-    protected receiveCommand(command: IPostMessageBridgeCommand) {
+    protected receiveCommand(command: IPostMessageBridgeCommand, event: MessageEvent) {
 
         const {type} = command;
 
@@ -89,9 +96,9 @@ export class PostMessageBridge extends Bridge {
         }
 
         if (type === PostMessageBridgeCommandTypes.Connect) {
-            this.handleConnectCommand();
+            this.handleConnectCommand(event.origin);
         } else if (type === PostMessageBridgeCommandTypes.ConnectSuccess) {
-            this.handleConnectSuccessCommand();
+            this.handleConnectSuccessCommand(event.origin);
         } else if (type === PostMessageBridgeCommandTypes.Disconnect) {
             this.handleDisconnect();
         }
@@ -108,7 +115,7 @@ export class PostMessageBridge extends Bridge {
         const command = tryDecodePostMessageBridgeCommand(data);
 
         if (command) {
-            this.receiveCommand(command);
+            this.receiveCommand(command, event);
         } else {
             this.receive(data);
         }
