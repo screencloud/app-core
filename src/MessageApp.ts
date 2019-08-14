@@ -1,6 +1,7 @@
 import {isArray, isFunction, isString, uniq} from "lodash";
 import {IBridge, IBridgeOptions, isBridge} from "./Bridge";
-import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
+import {isMessage} from "./messageValidation";
+import {Arrayfied} from "./utils";
 
 export interface IMessage<Payload = any, Type = any, Meta = any> {
     type: Type;
@@ -9,7 +10,7 @@ export interface IMessage<Payload = any, Type = any, Meta = any> {
 }
 
 export interface IMessageHandlers {
-    [index: string]: undefined | ((payload: void | any) => void);
+    [index: string]: (payload: void | any) => void;
 }
 
 export interface IMessageApp<MessageTypes = any> {
@@ -23,7 +24,9 @@ export interface IMessageApp<MessageTypes = any> {
         overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result>;
 
-    on(messageType: string, handler: ((payload: void | any) => void) | undefined): this;
+    on(messageType: string, handler: (payload: void | any) => void): this;
+
+    off(handler: (payload: void | any) => void): this;
 
     connect(): Promise<void>;
 
@@ -44,19 +47,17 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     }
 
     public readonly bridge: IBridge;
-    protected handlers: MessageHandlers;
+    protected handlers: Partial<Arrayfied<MessageHandlers>> = {};
 
     constructor(
-        handlers: MessageHandlers,
+        handlers: Partial<MessageHandlers>,
         bridge: IBridge,
     ) {
         // Handlers (Incoming only)
-        if (!isValidMessageHandlerCollection(handlers)) {
-            throw new Error("all handlers must be undefined or function");
-        }
-        this.handlers = {
-            ...(handlers as any),
-        };
+        Object
+            .keys(handlers)
+            .filter((k) => handlers[k])
+            .forEach((k) => handlers[k] && this.on(k, handlers[k]!));
 
         // Bridge
         if (!isBridge(bridge)) {
@@ -65,12 +66,28 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
         this.bridge = bridge;
     }
 
-    public on(messageType: string, handler: ((payload: void | any) => void) | undefined): this {
-        if (handler !== undefined && !isFunction(handler)) {
+    public on(messageType: string, handler: (payload: void | any) => void): this {
+        if (!isFunction(handler)) {
             throw new Error("handler must be callable or undefined");
         }
 
-        this.handlers[messageType] = handler;
+        if (!this.handlers[messageType]) {
+            this.handlers[messageType] = [handler];
+        } else {
+            this.handlers[messageType]!.push(handler);
+        }
+
+        return this;
+    }
+
+    public off(handler: (payload: void | any) => void) {
+        Object
+            .keys(this.handlers)
+            .forEach((k) => {
+                this.handlers[k] = this.handlers[k]!
+                    .filter((x: any) => x !== handler);
+            });
+
         return this;
     }
 
@@ -114,17 +131,25 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
 
         // typecast to any due to typescript inference error
         // TS2349: Cannot invoke an expression whose type lacks a request signature.
-        const handler: any = this.handlers[type];
+        const handlers: any = this.handlers[type];
 
-        if (isFunction(handler)) {
-            try {
-                return handler(payload);
-            } catch (e) {
-                // todo do something with caught exceptions
-
-                // rethrow
-                throw e;
+        try {
+            if (Array.isArray(handlers)) {
+                for (const k in handlers) {
+                    if (isFunction(handlers[k])) {
+                        const p = handlers[k](payload);
+                        // first handler to return a promise gets to talk
+                        if (p instanceof Promise) {
+                            return p;
+                        }
+                    }
+                }
             }
+        } catch (e) {
+            // todo do something with caught exceptions
+
+            // rethrow
+            throw e;
         }
     }
 }
