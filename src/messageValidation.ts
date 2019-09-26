@@ -1,4 +1,6 @@
-import {isFunction, isPlainObject, isString} from "lodash";
+import isFunction from "lodash/isFunction";
+import isPlainObject from "lodash/isPlainObject";
+import isString from "lodash/isString";
 import {IMessage, IMessageHandlers} from "./MessageApp";
 
 /**
