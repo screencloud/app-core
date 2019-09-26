@@ -1,4 +1,9 @@
-import {has, hasIn, isFunction, isNumber, isObjectLike, isPlainObject} from "lodash";
+import has from "lodash/has";
+import hasIn from "lodash/hasIn";
+import isFunction from "lodash/isFunction";
+import isNumber from "lodash/isNumber";
+import isObjectLike from "lodash/isObjectLike"
+import isPlainObject from "lodash/isPlainObject"
 import {IMessage} from "./MessageApp";
 
 export interface IBridge {

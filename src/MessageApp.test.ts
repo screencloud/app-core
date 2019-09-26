@@ -1,4 +1,4 @@
-import {isFunction} from "lodash";
+import isFunction from "lodash/isFunction";
 import {IBridge} from "./Bridge";
 import {IMessage, IMessageHandlers, isValidMessageTypeArray, MessageApp} from "./MessageApp";
 
