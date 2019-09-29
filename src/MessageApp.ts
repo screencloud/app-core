@@ -1,4 +1,7 @@
-import {isArray, isFunction, isString, uniq} from "lodash";
+import isArray from "lodash/isArray";
+import isFunction from "lodash/isFunction";
+import isString from "lodash/isString";
+import uniq from "lodash/uniq";
 import {IBridge, IBridgeOptions, isBridge} from "./Bridge";
 import {isMessage} from "./messageValidation";
 import {Arrayfied} from "./utils";
