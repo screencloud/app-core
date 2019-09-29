@@ -212,7 +212,7 @@ describe("PostMessageBridge", () => {
                         throw new Error("should have received an error");
                     })
                     .catch((reason) => {
-                        expect(reason).toBe("requestFail");
+                        expect(reason.message).toContain("requestFail");
                         // (console).log("requestFail received");
                     }),
                 // incoming request to be answered with response

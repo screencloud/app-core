@@ -209,7 +209,7 @@ export class Bridge implements IBridge {
             if (options.timeout !== -1) {
                 setTimeout(() => {
                     if (this.promiseResolvers[ requestId ]) {
-                        this.promiseResolvers[ requestId ].reject("timeout");
+                        this.promiseResolvers[ requestId ].reject(new Error("Request timeout."));
                     }
                 }, options.timeout);
             }
@@ -234,7 +234,7 @@ export class Bridge implements IBridge {
     protected handleDisconnect(): void {
         // cancel all hanging requests
         Object.keys(this.promiseResolvers).forEach((key: any) => {
-            this.promiseResolvers[key].reject("disconnect");
+            this.promiseResolvers[key].reject(new Error("disconnect"));
         });
 
         // reset handler and state
@@ -286,7 +286,7 @@ export class Bridge implements IBridge {
         const promise = this.promiseResolvers[referenceId];
         if (promise) {
             if (message.isError === true) {
-                promise.reject(message.data);
+                promise.reject(new Error(`Error response received: \n${message.data}`));
             } else {
                 promise.resolve(message.data);
             }
@@ -297,7 +297,7 @@ export class Bridge implements IBridge {
         // PromiseLike
         if (!promise || !promise.then || !promise.catch) {
             this.send({
-                data: "unknown error occured",
+                data: "unknown error occurred",
                 isError: true,
                 referenceId: requestId,
             });
@@ -313,7 +313,7 @@ export class Bridge implements IBridge {
 
         promise.catch((data) => {
             this.send({
-                data,
+                data: data.message ? data.message : data,
                 isError: true,
                 referenceId: requestId,
             });
