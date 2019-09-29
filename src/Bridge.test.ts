@@ -266,7 +266,7 @@ describe("Bridge", () => {
             .connect(() => undefined)
             .then(() => bridge.request({}))
             .catch((reason) => {
-                expect(reason).toBe("timeout");
+                expect(reason.message).toContain("timeout");
                 done();
             });
     });
