@@ -31,7 +31,7 @@ export interface IMessageApp<MessageTypes = any> {
 
     off(handler: (payload: void | any) => void): this;
 
-    connect(): Promise<void>;
+    connect(awaitConnection?: boolean, attemptsNumber?: number): Promise<void>;
 
     disconnect(): Promise<void>;
 }
@@ -94,9 +94,9 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
         return this;
     }
 
-    public connect(awaitConnection: boolean = false): Promise<void> {
+    public connect(awaitConnection: boolean = false, attemptsNumber: number = 1): Promise<void> {
         return this.bridge
-            .connect((message) => this.receive(message), awaitConnection);
+            .connect((message) => this.receive(message), awaitConnection, attemptsNumber);
     }
 
     public disconnect(): Promise<void> {
