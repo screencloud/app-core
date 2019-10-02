@@ -14,7 +14,11 @@ export interface IBridge {
     /*
      * initializes connection to the app container. Requires a handler to be passed in
     */
-    connect(handler: (message: IMessage) => (undefined | Promise<any>), awaitConnection?: boolean): Promise<void>;
+    connect(
+        handler: (message: IMessage) => (undefined | Promise<any>),
+        awaitConnection?: boolean,
+        attemptsNumber?: number,
+    ): Promise<void>;
 
     /*
      * disconnects from the app container. Removes the handler
@@ -138,6 +142,7 @@ export class Bridge implements IBridge {
     public connect(
         handler: (message: IMessage<any, any>) => undefined | Promise<any>,
         awaitConnection: boolean = false,
+        attemptsNumber: number = 1,
     ): Promise<void> {
         if (!isFunction(handler)) {
             throw new Error("invalid argument: handler is not callable");
@@ -150,7 +155,20 @@ export class Bridge implements IBridge {
             ? BridgeState.AwaitingConnect
             : BridgeState.Connecting;
 
-        return this.options.connect(awaitConnection)
+        return new Promise((resolve, reject) => {
+            const makeAttempt = (currentAttempt: number): void => {
+                this.options.connect(awaitConnection)
+                    .then(() => resolve())
+                    .catch((err) => {
+                        if (currentAttempt >= attemptsNumber) {
+                            return reject(err);
+                        }
+                        currentAttempt++;
+                        makeAttempt(currentAttempt);
+                    });
+            };
+            makeAttempt(1);
+        })
             .then(() => {
                 this.messageHandler = handler;
                 this.state = BridgeState.Connected;
