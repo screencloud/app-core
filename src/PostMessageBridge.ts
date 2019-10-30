@@ -29,6 +29,10 @@ export function encodePostMessageBridgeCommand(type: PostMessageBridgeCommandTyp
 
 export class PostMessageBridge extends Bridge {
 
+    protected targetWindow: Window | null = null;
+
+    protected sourceWindow: Window | null = null;
+
     protected eventListener?: EventListenerOrEventListenerObject = undefined;
 
     protected resolveConnect?: () => void = undefined;
@@ -39,8 +43,8 @@ export class PostMessageBridge extends Bridge {
     }
 
     constructor(
-        protected targetWindow: Window = window.opener || window.parent || window.top,
-        protected sourceWindow: Window = window,
+        targetWindow: Window = window.opener || window.parent || window.top,
+        sourceWindow: Window = window,
         timeout: number = 1000,
     ) {
         super({
@@ -55,13 +59,21 @@ export class PostMessageBridge extends Bridge {
             disconnect: () => new Promise((resolve) => {
                 this.removeListener();
                 this.sendCommand(PostMessageBridgeCommandTypes.Disconnect);
+                this.targetWindow = null;
+                this.sourceWindow = null;
                 resolve();
             }),
             send: (request: string) => {
+                if (!this.targetWindow) {
+                    throw new Error("No target window.");
+                }
                 this.targetWindow.postMessage(request, "*");
             },
             timeout,
         });
+
+        this.targetWindow = targetWindow;
+        this.sourceWindow = sourceWindow;
 
         if (!this.targetWindow || !this.targetWindow.postMessage) {
             throw new Error("invalid argument targetWindow");
@@ -122,7 +134,7 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected addListener(): void {
-        if (!this.eventListener) {
+        if (!this.eventListener && this.sourceWindow) {
             this.sourceWindow.addEventListener(
                 "message",
                 this.eventListener = (event: any) => this.handleMessageEvent(event),
@@ -131,7 +143,7 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected removeListener(): void {
-        if (this.eventListener) {
+        if (this.eventListener && this.sourceWindow) {
             this.sourceWindow.removeEventListener("message", this.eventListener);
             this.eventListener = undefined;
         }
