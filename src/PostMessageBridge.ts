@@ -134,10 +134,7 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected addListener(): void {
-        if (!this.sourceWindow) {
-            throw new Error("No source window.");
-        }
-        if (!this.eventListener) {
+        if (!this.eventListener && this.sourceWindow) {
             this.sourceWindow.addEventListener(
                 "message",
                 this.eventListener = (event: any) => this.handleMessageEvent(event),
@@ -146,10 +143,7 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected removeListener(): void {
-        if (!this.sourceWindow) {
-            throw new Error("No source window.");
-        }
-        if (this.eventListener) {
+        if (this.eventListener && this.sourceWindow) {
             this.sourceWindow.removeEventListener("message", this.eventListener);
             this.eventListener = undefined;
         }
