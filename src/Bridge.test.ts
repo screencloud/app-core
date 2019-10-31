@@ -197,7 +197,6 @@ describe("Bridge", () => {
 
         // step 1
         expect(bridge.getState()).toBe(BridgeState.Disconnected);
-        // expect(() => bridge.disconnect()).toThrow();
 
         bridge
             .connect(() => undefined)
