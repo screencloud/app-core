@@ -170,6 +170,10 @@ export class Bridge implements IBridge {
             makeAttempt(1);
         })
             .then(() => {
+                if (this.state !== BridgeState.AwaitingConnect && this.state !== BridgeState.Connecting) {
+                    // disconnected was called before connection succeeded, avoid setting connected state
+                    return;
+                }
                 this.messageHandler = handler;
                 this.state = BridgeState.Connected;
             })
