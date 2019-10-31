@@ -186,10 +186,6 @@ export class Bridge implements IBridge {
     }
 
     public disconnect(): Promise<void> {
-        if (this.state !== BridgeState.Connected) {
-            throw new Error("invalid request");
-        }
-
         this.state = BridgeState.Disconnecting;
 
         return this.options.disconnect().then(() => {

@@ -197,7 +197,7 @@ describe("Bridge", () => {
 
         // step 1
         expect(bridge.getState()).toBe(BridgeState.Disconnected);
-        expect(() => bridge.disconnect()).toThrow();
+        // expect(() => bridge.disconnect()).toThrow();
 
         bridge
             .connect(() => undefined)
@@ -217,6 +217,28 @@ describe("Bridge", () => {
 
         // step
         expect(bridge.getState()).toBe(BridgeState.Connecting);
+    });
+
+    test("Bridge disconnect before connection success", (done) => {
+        const bridge = new Bridge({
+            connect: () => new Promise((resolve) => {
+                // connect after 20ms
+                setTimeout(() => resolve(), 20);
+            }),
+            disconnect: () => new Promise((resolve) => {
+                // disconnect after 10ms
+                setTimeout(() => resolve(), 10);
+            }),
+            send: () => undefined,
+            timeout: 30,
+        });
+
+        bridge.connect(() => undefined)
+          .then(() => {
+              expect(bridge.getState()).toBe(BridgeState.Disconnected);
+              done();
+          });
+        bridge.disconnect();
     });
 
     test("Bridge.send()", (done) => {
