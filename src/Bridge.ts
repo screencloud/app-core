@@ -157,6 +157,10 @@ export class Bridge implements IBridge {
 
         return new Promise((resolve, reject) => {
             const makeAttempt = (currentAttempt: number): void => {
+                if (this.state !== BridgeState.AwaitingConnect && this.state !== BridgeState.Connecting) {
+                    return resolve();
+                }
+
                 this.options.connect(awaitConnection)
                     .then(() => resolve())
                     .catch((err) => {
