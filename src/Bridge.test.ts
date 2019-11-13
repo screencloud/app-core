@@ -197,25 +197,38 @@ describe("Bridge", () => {
 
         // step 1
         expect(bridge.getState()).toBe(BridgeState.Disconnected);
+        let pms: Promise<any> | null = null;
+        expect(() => pms = bridge.disconnect()).not.toThrow();
 
-        bridge
-            .connect(() => undefined)
+        Promise.resolve()
+            .then(() => {
+                if (pms) {
+                    return pms;
+                }
+            })
+            .then(() => {
+                const promise = bridge
+                    .connect(() => undefined);
+                // step
+                expect(bridge.getState()).toBe(BridgeState.Connecting);
+                return promise;
+            })
             .then(() => {
                 // step 3
                 expect(bridge.getState()).toBe(BridgeState.Connected);
                 expect(() => bridge.connect(() => undefined)).toThrow();
 
-                bridge.disconnect().then(() => {
-                    // step 4
-                    expect(bridge.getState()).toBe(BridgeState.Disconnected);
-                    done();
-                });
+                const promise = bridge.disconnect();
 
                 expect(bridge.getState()).toBe(BridgeState.Disconnecting);
-            });
 
-        // step
-        expect(bridge.getState()).toBe(BridgeState.Connecting);
+                return promise;
+            })
+            .then(() => {
+                // step 4
+                expect(bridge.getState()).toBe(BridgeState.Disconnected);
+                done();
+            });
     });
 
     test("Bridge disconnect before connection success", (done) => {
@@ -233,10 +246,10 @@ describe("Bridge", () => {
         });
 
         bridge.connect(() => undefined)
-          .then(() => {
-              expect(bridge.getState()).toBe(BridgeState.Disconnected);
-              done();
-          });
+            .then(() => {
+                expect(bridge.getState()).toBe(BridgeState.Disconnected);
+                done();
+            });
         bridge.disconnect();
     });
 
