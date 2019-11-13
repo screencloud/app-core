@@ -157,6 +157,10 @@ export class Bridge implements IBridge {
 
         return new Promise((resolve, reject) => {
             const makeAttempt = (currentAttempt: number): void => {
+                if (this.state !== BridgeState.AwaitingConnect && this.state !== BridgeState.Connecting) {
+                    return resolve();
+                }
+
                 this.options.connect(awaitConnection)
                     .then(() => resolve())
                     .catch((err) => {
@@ -170,6 +174,10 @@ export class Bridge implements IBridge {
             makeAttempt(1);
         })
             .then(() => {
+                if (this.state !== BridgeState.AwaitingConnect && this.state !== BridgeState.Connecting) {
+                    // disconnected was called before connection succeeded, avoid setting connected state
+                    return;
+                }
                 this.messageHandler = handler;
                 this.state = BridgeState.Connected;
             })
@@ -182,10 +190,6 @@ export class Bridge implements IBridge {
     }
 
     public disconnect(): Promise<void> {
-        if (this.state !== BridgeState.Connected) {
-            throw new Error("invalid request");
-        }
-
         this.state = BridgeState.Disconnecting;
 
         return this.options.disconnect().then(() => {
