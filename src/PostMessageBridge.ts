@@ -33,23 +33,32 @@ export class PostMessageBridge extends Bridge {
 
     protected sourceWindow: Window | null = null;
 
-    protected eventListener?: EventListenerOrEventListenerObject = undefined;
+    protected eventListenersAdded: boolean = false;
 
     protected resolveConnect?: () => void = undefined;
+    
     private _origin?: string;
 
     public get origin() {
         return this._origin;
     }
+    
+    protected get target() : Window {
+        const target : Window = this.targetWindow || window.opener || window.parent;
+        if (target === this.sourceWindow) {
+            throw new Error("Target window can't be same as source");
+        }   
+        return target;
+    }
 
     constructor(
-        targetWindow: Window = window.opener || window.parent || window.top,
+        targetWindow: Window = null,
         sourceWindow: Window = window,
         timeout: number = 1000,
     ) {
         super({
             connect: (awaitConnect?: boolean) => new Promise((resolve, reject) => {
-                this.addListener();
+                this.addListeners();
                 this.resolveConnect = resolve;
                 setTimeout(() => reject(new Error("Connection timeout.")), this.options.timeout);
                 if (!awaitConnect) {
@@ -57,17 +66,14 @@ export class PostMessageBridge extends Bridge {
                 }
             }),
             disconnect: () => new Promise((resolve) => {
-                this.removeListener();
+                this.removeListeners();
                 this.sendCommand(PostMessageBridgeCommandTypes.Disconnect);
                 this.targetWindow = null;
                 this.sourceWindow = null;
                 resolve();
             }),
             send: (request: string) => {
-                if (!this.targetWindow) {
-                    throw new Error("No target window.");
-                }
-                this.targetWindow.postMessage(request, "*");
+                this.target.postMessage(request, "*");
             },
             timeout,
         });
@@ -75,7 +81,7 @@ export class PostMessageBridge extends Bridge {
         this.targetWindow = targetWindow;
         this.sourceWindow = sourceWindow;
 
-        if (!this.targetWindow || !this.targetWindow.postMessage) {
+        if (!this.target || !this.target.postMessage) {
             throw new Error("invalid argument targetWindow");
         }
     }
@@ -98,6 +104,13 @@ export class PostMessageBridge extends Bridge {
             this.resolveConnect();
         }
     }
+    
+    protected handleDisconnectCommand(origin: string) {
+        this.removeListeners();
+        this.targetWindow = null;
+        this.sourceWindow = null;
+        this.handleDisconnect();
+    }
 
     protected receiveCommand(command: IPostMessageBridgeCommand, event: MessageEvent) {
 
@@ -112,13 +125,13 @@ export class PostMessageBridge extends Bridge {
         } else if (type === PostMessageBridgeCommandTypes.ConnectSuccess) {
             this.handleConnectSuccessCommand(event.origin);
         } else if (type === PostMessageBridgeCommandTypes.Disconnect) {
-            this.handleDisconnect();
+            this.handleDisconnectCommand(event.origin);
         }
     }
 
     protected handleMessageEvent(event: MessageEvent): void {
         // source is unexpected?
-        if (event.source !== this.targetWindow) {
+        if (event.source !== this.target) {
             return;
         }
 
@@ -133,19 +146,26 @@ export class PostMessageBridge extends Bridge {
         }
     }
 
-    protected addListener(): void {
-        if (!this.eventListener && this.sourceWindow) {
-            this.sourceWindow.addEventListener(
-                "message",
-                this.eventListener = (event: any) => this.handleMessageEvent(event),
-            );
+    protected handleUnloadEvent() {
+        this.removeListeners();
+        this.targetWindow = null;
+        this.sourceWindow = null;
+        this.handleDisconnect();
+    }
+    
+    protected addListeners(): void {
+        if (!this.eventListenersAdded && this.sourceWindow) {
+            this.eventListenersAdded = true;
+            this.sourceWindow.addEventListener("message", this.handleMessageEvent);
+            this.sourceWindow.addEventListener("unload", this.handleUnloadEvent);
         }
     }
 
-    protected removeListener(): void {
-        if (this.eventListener && this.sourceWindow) {
-            this.sourceWindow.removeEventListener("message", this.eventListener);
-            this.eventListener = undefined;
+    protected removeListeners(): void {
+        if (this.eventListenersAdded && this.sourceWindow) {
+            this.sourceWindow.removeEventListener("message", this.handleMessageEvent);
+            this.sourceWindow.removeEventListener("unload", this.handleUnloadEvent);
+            this.eventListenersAdded = false;
         }
     }
 }
