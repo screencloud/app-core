@@ -36,23 +36,23 @@ export class PostMessageBridge extends Bridge {
     protected eventListenersAdded: boolean = false;
 
     protected resolveConnect?: () => void = undefined;
-    
+
     private _origin?: string;
 
     public get origin() {
         return this._origin;
     }
-    
-    protected get target() : Window {
-        const target : Window = this.targetWindow || window.opener || window.parent;
+
+    protected get target(): Window {
+        const target: Window = this.targetWindow || window.opener || window.parent;
         if (target === this.sourceWindow) {
             throw new Error("Target window can't be same as source");
-        }   
+        }
         return target;
     }
 
     constructor(
-        targetWindow: Window = null,
+        targetWindow: Window | null = null,
         sourceWindow: Window = window,
         timeout: number = 1000,
     ) {
@@ -104,7 +104,7 @@ export class PostMessageBridge extends Bridge {
             this.resolveConnect();
         }
     }
-    
+
     protected handleDisconnectCommand(origin: string) {
         this.removeListeners();
         this.targetWindow = null;
@@ -129,7 +129,7 @@ export class PostMessageBridge extends Bridge {
         }
     }
 
-    protected handleMessageEvent(event: MessageEvent): void {
+    protected handleMessageEvent = (event: MessageEvent): void => {
         // source is unexpected?
         if (event.source !== this.target) {
             return;
@@ -146,13 +146,13 @@ export class PostMessageBridge extends Bridge {
         }
     }
 
-    protected handleUnloadEvent() {
+    protected handleUnloadEvent = () => {
         this.removeListeners();
         this.targetWindow = null;
         this.sourceWindow = null;
         this.handleDisconnect();
     }
-    
+
     protected addListeners(): void {
         if (!this.eventListenersAdded && this.sourceWindow) {
             this.eventListenersAdded = true;
