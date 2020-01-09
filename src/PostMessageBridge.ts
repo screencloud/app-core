@@ -29,13 +29,13 @@ export function encodePostMessageBridgeCommand(type: PostMessageBridgeCommandTyp
 
 export class PostMessageBridge extends Bridge {
 
-    protected targetWindow: Window | null = null;
+    private targetWindow: Window | null = null;
 
-    protected sourceWindow: Window | null = null;
+    private sourceWindow: Window | null = null;
 
-    protected eventListenersAdded = false;
+    private eventListenersAdded = false;
 
-    protected resolveConnect?: () => void = undefined;
+    private resolveConnect?: () => void = undefined;
 
     private _origin?: string;
 
@@ -43,7 +43,7 @@ export class PostMessageBridge extends Bridge {
         return this._origin;
     }
 
-    protected get target(): Window {
+    private get target(): Window {
         const target: Window = this.targetWindow || window.opener || window.parent;
         if (target === this.sourceWindow) {
             throw new Error("Target window can't be same as source");
@@ -86,11 +86,11 @@ export class PostMessageBridge extends Bridge {
         }
     }
 
-    protected sendCommand(type: PostMessageBridgeCommandTypes, data?: any) {
+    private sendCommand(type: PostMessageBridgeCommandTypes, data?: any) {
         this.options.send(encodePostMessageBridgeCommand(type, data));
     }
 
-    protected handleConnectCommand(origin: string) {
+    private handleConnectCommand(origin: string) {
         if (this.state === BridgeState.AwaitingConnect && this.resolveConnect) {
             this.sendCommand(PostMessageBridgeCommandTypes.ConnectSuccess);
             this._origin = origin;
@@ -98,21 +98,21 @@ export class PostMessageBridge extends Bridge {
         }
     }
 
-    protected handleConnectSuccessCommand(origin: string) {
+    private handleConnectSuccessCommand(origin: string) {
         if (this.state === BridgeState.Connecting && this.resolveConnect) {
             this._origin = origin;
             this.resolveConnect();
         }
     }
 
-    protected handleDisconnectCommand(origin: string) {
+    private handleDisconnectCommand(origin: string) {
         this.removeListeners();
         this.targetWindow = null;
         this.sourceWindow = null;
         this.handleDisconnect();
     }
 
-    protected receiveCommand(command: IPostMessageBridgeCommand, event: MessageEvent) {
+    private receiveCommand(command: IPostMessageBridgeCommand, event: MessageEvent) {
 
         const {type} = command;
 
@@ -129,7 +129,7 @@ export class PostMessageBridge extends Bridge {
         }
     }
 
-    protected handleMessageEvent = (event: MessageEvent): void => {
+    private handleMessageEvent = (event: MessageEvent): void => {
         // source is unexpected?
         if (event.source !== this.target) {
             return;
@@ -146,14 +146,14 @@ export class PostMessageBridge extends Bridge {
         }
     }
 
-    protected handleUnloadEvent = () => {
+    private handleUnloadEvent = () => {
         this.removeListeners();
         this.targetWindow = null;
         this.sourceWindow = null;
         this.handleDisconnect();
     }
 
-    protected addListeners(): void {
+    private addListeners(): void {
         if (!this.eventListenersAdded && this.sourceWindow) {
             this.eventListenersAdded = true;
             this.sourceWindow.addEventListener("message", this.handleMessageEvent);
@@ -161,7 +161,7 @@ export class PostMessageBridge extends Bridge {
         }
     }
 
-    protected removeListeners(): void {
+    private removeListeners(): void {
         if (this.eventListenersAdded && this.sourceWindow) {
             this.sourceWindow.removeEventListener("message", this.handleMessageEvent);
             this.sourceWindow.removeEventListener("unload", this.handleUnloadEvent);
