@@ -1,7 +1,7 @@
-import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
+import { isMessage, isValidMessageHandlerCollection } from './messageValidation'
 
 // isMessage() => false
-[
+;[
     undefined,
     null,
     {},
@@ -11,7 +11,7 @@ import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
     },
     {
         bar: true,
-        type: "foo",
+        type: 'foo',
     },
     {
         meta: 35,
@@ -19,36 +19,36 @@ import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
     },
 ].forEach((obj, i) => {
     test(`isMessage() should return false #${i}`, () => {
-        expect(isMessage(obj)).toBeFalsy();
-    });
-});
+        expect(isMessage(obj)).toBeFalsy()
+    })
+})
 
 // isMessage() => true
-[
+;[
     {
-        type: "foo",
+        type: 'foo',
     },
     {
         payload: true,
-        type: "foo",
+        type: 'foo',
     },
     {
         meta: 5,
-        type: "foo",
+        type: 'foo',
     },
     {
         meta: 25,
         payload: 17,
-        type: "bar",
+        type: 'bar',
     },
 ].forEach((obj, i) => {
     test(`isMessage() should return true #${i}`, () => {
-        expect(isMessage(obj)).toBeTruthy();
-    });
-});
+        expect(isMessage(obj)).toBeTruthy()
+    })
+})
 
 // isValidMessageHandlerCollection => true
-[
+;[
     // empty is fine
     {},
     // partial is fine
@@ -61,11 +61,11 @@ import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
     },
 ].forEach((obj, i) => {
     test(`testisValidMessageHandlerCollection() should return true #${i}`, () => {
-        expect(isValidMessageHandlerCollection(obj)).toBeTruthy();
-    });
-});
+        expect(isValidMessageHandlerCollection(obj)).toBeTruthy()
+    })
+})
 // isValidMessageHandlerCollection => false
-[
+;[
     undefined,
     true,
     {
@@ -80,6 +80,6 @@ import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
     },
 ].forEach((obj, i) => {
     test(`testisValidMessageHandlerCollection() should return false #${i}`, () => {
-        expect(isValidMessageHandlerCollection(obj)).toBeFalsy();
-    });
-});
+        expect(isValidMessageHandlerCollection(obj)).toBeFalsy()
+    })
+})
