@@ -33,7 +33,7 @@ export class PostMessageBridge extends Bridge {
 
     protected sourceWindow: Window | null = null;
 
-    protected eventListenersAdded: boolean = false;
+    protected eventListenersAdded = false;
 
     protected resolveConnect?: () => void = undefined;
 
@@ -54,7 +54,7 @@ export class PostMessageBridge extends Bridge {
     constructor(
         targetWindow: Window | null = null,
         sourceWindow: Window = window,
-        timeout: number = 1000,
+        timeout = 1000,
     ) {
         super({
             connect: (awaitConnect?: boolean) => new Promise((resolve, reject) => {

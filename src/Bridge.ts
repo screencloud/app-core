@@ -121,9 +121,9 @@ export class Bridge implements IBridge {
 
     protected promiseResolvers: {
         [referenceId: number]: {
-            resolve: (result: any) => void | undefined,
-            reject: (reason: any) => void | undefined,
-        },
+            resolve: (result: any) => void | undefined;
+            reject: (reason: any) => void | undefined;
+        };
     } = {};
 
     protected options: IBridgeOptions;
@@ -141,8 +141,8 @@ export class Bridge implements IBridge {
 
     public connect(
         handler: (message: IMessage<any, any>) => undefined | Promise<any>,
-        awaitConnection: boolean = false,
-        attemptsNumber: number = 1,
+        awaitConnection = false,
+        attemptsNumber = 1,
     ): Promise<void> {
         if (!isFunction(handler)) {
             throw new Error("invalid argument: handler is not callable");

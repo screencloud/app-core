@@ -94,7 +94,7 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
         return this;
     }
 
-    public connect(awaitConnection: boolean = false, attemptsNumber: number = 1): Promise<void> {
+    public connect(awaitConnection = false, attemptsNumber = 1): Promise<void> {
         return this.bridge
             .connect((message) => this.receive(message), awaitConnection, attemptsNumber);
     }
