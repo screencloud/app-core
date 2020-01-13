@@ -1,8 +1,8 @@
 // tslint:disable-next-line: no-submodule-imports
-import 'ts-polyfill/lib/es2017-object'
+import "ts-polyfill/lib/es2017-object";
 
 // App
-export { IMessageApp, MessageApp, IMessage, IMessageHandlers } from './MessageApp'
+export { IMessageApp, MessageApp, IMessage, IMessageHandlers } from "./MessageApp";
 
 // Bridge
 export {
@@ -14,5 +14,5 @@ export {
     IBridge,
     Bridge,
     BridgeState,
-} from './Bridge'
-export { PostMessageBridge, PostMessageBridgeCommandTypes } from './PostMessageBridge'
+} from "./Bridge";
+export { PostMessageBridge, PostMessageBridgeCommandTypes } from "./PostMessageBridge";
