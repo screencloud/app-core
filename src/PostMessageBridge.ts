@@ -21,9 +21,6 @@ export function tryDecodePostMessageBridgeCommand(obj: any): undefined | IPostMe
 }
 
 export function encodePostMessageBridgeCommand(type: PostMessageBridgeCommandTypes, data?: any): string {
-    if (!type || !isString(type)) {
-        throw new Error(`command must be a string`);
-    }
     return `___${JSON.stringify({type, data})}`;
 }
 
