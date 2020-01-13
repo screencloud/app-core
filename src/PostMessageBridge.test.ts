@@ -35,10 +35,6 @@ const makeWindow = (): Window => (new FakeWindow() as any);
 test("encodePostMessageBridgeCommand()", () => {
     expect(encodePostMessageBridgeCommand("foo" as any)).toEqual(`___{"type":"foo"}`);
     expect(encodePostMessageBridgeCommand("foo" as any, 17)).toEqual(`___{"type":"foo","data":17}`);
-
-    expect(() => encodePostMessageBridgeCommand(17 as any)).toThrow();
-    expect(() => encodePostMessageBridgeCommand(undefined as any)).toThrow();
-    expect(() => encodePostMessageBridgeCommand({} as any)).toThrow();
 });
 
 test("tryDecodePostMessageBridgeCommand()", () => {
