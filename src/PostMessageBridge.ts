@@ -12,7 +12,7 @@ export interface IPostMessageBridgeCommand<T = never> {
 }
 
 // Our convention is that commands start with three underscores '___'
-export function tryDecodePostMessageBridgeCommand(obj: any): undefined | IPostMessageBridgeCommand {
+export function tryDecodePostMessageBridgeCommand(obj: unknown): undefined | IPostMessageBridgeCommand {
     if (typeof obj !== "string" || obj.substr(0, 3) !== "___") {
         return undefined;
     }
