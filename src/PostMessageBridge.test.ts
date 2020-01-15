@@ -1,18 +1,20 @@
-import {IBridgeMessage} from "./Bridge";
+import {BridgeState, IBridgeMessage} from "./Bridge";
 import {
     encodePostMessageBridgeCommand,
     PostMessageBridge,
     PostMessageBridgeCommandTypes,
-    tryDecodePostMessageBridgeCommand,
+    tryDecodePostMessageBridgeCommand
 } from "./PostMessageBridge";
 
 import {EventEmitter} from "events";
 
 class FakeWindow extends EventEmitter {
-
     public defaultSource?: FakeWindow;
 
-    public addEventListener(event: string, handler: (...args: any[]) => void): void {
+    public addEventListener(
+        event: string,
+        handler: (...args: any[]) => void
+    ): void {
         this.addListener(event, handler);
     }
 
@@ -78,9 +80,80 @@ describe("PostMessageBridge", () => {
             .not.toThrow();
     });
 
-    test("addListener()/removeListener()/handleMessageEvent()", (done) => {
+    // tslint:disable:no-console
+    it("request()", async () => {
         const targetWindow = new FakeWindow();
         const sourceWindow = new FakeWindow();
+
+        const postMessageBridge = new PostMessageBridge(
+            targetWindow as any,
+            sourceWindow as any
+        );
+
+        // postMessageBridge.connect() will timeout unless you add the targetWindow event listener first
+        targetWindow.addEventListener("message", (event: MessageEvent) => {
+            const {data} = event;
+            console.log("event received: ", event);
+
+            const command = tryDecodePostMessageBridgeCommand(data);
+
+            switch (command && command.type) {
+                case PostMessageBridgeCommandTypes.Connect: {
+                    sourceWindow.postMessage(
+                        encodePostMessageBridgeCommand(
+                            PostMessageBridgeCommandTypes.ConnectSuccess
+                        ),
+                        "screencloudapps.com",
+                        targetWindow as any
+                    );
+                    break;
+                }
+                case PostMessageBridgeCommandTypes.Disconnect: {
+                    break;
+                }
+                default: {
+                    // Receive any generic data
+                    console.log("inide the NON command block");
+                    const message: IBridgeMessage = JSON.parse(data);
+                    // expect(message.data).toBe("myLittlePony");
+                    console.log('message was: ', message)
+                    console.log(message.data)
+                    sourceWindow.postMessage(
+                        message.data,
+                        "screencloudapps.com",
+                        targetWindow as any
+                    );
+                    //send it back
+                    break;
+                }
+            }
+        });
+
+        await postMessageBridge.connect(() => Promise.resolve());
+        expect(postMessageBridge.getState()).toBe(BridgeState.Connected);
+        expect(postMessageBridge.isConnected).toBe(true);
+        expect(postMessageBridge.origin).toBe('screencloudapps.com');
+
+        // TODO: Untyped, need to type request param to IBridgeMessage
+        // TODO: decode() should also probably use JSON.parse(JSON.stringify(string)) except
+        // that breaks some things within PostMessageBridge to PostMessageBridge test
+        // const huh = await postMessageBridge.request({ data: 'whoa there hoss', mustafar: 'woooo'})
+
+        // Otherwise you have to wrap requests as strings as such:
+        // const huh = await postMessageBridge.request('{ "data": "hello!"}')
+        // console.log('huh', huh)
+
+        // postMessageBridge.send({data: "myLittlePony"});
+
+        await postMessageBridge.disconnect();
+        expect(postMessageBridge.getState()).toBe(BridgeState.Disconnected);
+    });
+
+    test("addListener()/removeListener()/handleMessageEvent()", done => {
+        const targetWindow = new FakeWindow();
+        const sourceWindow = new FakeWindow();
+
+        // PostMessageBridge expects actual windows, so must cast FakeWindow to any
         const pmb = new PostMessageBridge(targetWindow as any, sourceWindow as any);
 
         let stage: "connect" | "send" | "disconnect" | "done" = "connect";
