@@ -23,9 +23,10 @@ While all classes can be used directly it's recommended to put the into a fully 
 
 ```mermaid
 classDiagram
-    Bridge <|-- PosmetMessageBridge
+    Bridge <|-- PostMessageBridge
     Bridge <|-- WebSocketBridge : currently doesn't exist
 ```
+[![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG4gICAgQnJpZGdlIDx8LS0gUG9zdE1lc3NhZ2VCcmlkZ2VcbiAgICBCcmlkZ2UgPHwtLSBXZWJTb2NrZXRCcmlkZ2UgOiBjdXJyZW50bHkgZG9lc24ndCBleGlzdFxuIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifX0)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG4gICAgQnJpZGdlIDx8LS0gUG9zdE1lc3NhZ2VCcmlkZ2VcbiAgICBCcmlkZ2UgPHwtLSBXZWJTb2NrZXRCcmlkZ2UgOiBjdXJyZW50bHkgZG9lc24ndCBleGlzdFxuIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifX0)
 
 Meanwhile `MessageApp` is extended by the following classes in [@screencloud/app](https://github.com/screencloud/app).
 
@@ -40,3 +41,5 @@ classDiagram
     MessageApp <|-- AppPlayer
     AppPlayer <|-- MixedPlayer
 ```
+
+[![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG4gICAgTWVzc2FnZUFwcCA8fC0tIEVkaXRvclBsYXllclxuICAgIE1lc3NhZ2VBcHAgPHwtLSBFZGl0b3JQbGF5ZXJIb3N0XG4gICAgTWVzc2FnZUFwcCA8fC0tIEFwcENvbnRhaW5lclxuICAgIE1lc3NhZ2VBcHAgPHwtLSBBcHBcblxuICAgIE1lc3NhZ2VBcHAgPHwtLSBBcHBQbGF5ZXJIb3N0XG4gICAgTWVzc2FnZUFwcCA8fC0tIEFwcFBsYXllclxuICAgIEFwcFBsYXllciA8fC0tIE1peGVkUGxheWVyXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9fQ)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG4gICAgTWVzc2FnZUFwcCA8fC0tIEVkaXRvclBsYXllclxuICAgIE1lc3NhZ2VBcHAgPHwtLSBFZGl0b3JQbGF5ZXJIb3N0XG4gICAgTWVzc2FnZUFwcCA8fC0tIEFwcENvbnRhaW5lclxuICAgIE1lc3NhZ2VBcHAgPHwtLSBBcHBcblxuICAgIE1lc3NhZ2VBcHAgPHwtLSBBcHBQbGF5ZXJIb3N0XG4gICAgTWVzc2FnZUFwcCA8fC0tIEFwcFBsYXllclxuICAgIEFwcFBsYXllciA8fC0tIE1peGVkUGxheWVyXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9fQ)
