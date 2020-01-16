@@ -39,7 +39,7 @@ classDiagram
 
 [![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG4gICAgQnJpZGdlIDx8LS0gUG9zdE1lc3NhZ2VCcmlkZ2VcbiAgICBCcmlkZ2UgPHwtLSBXZWJTb2NrZXRCcmlkZ2VcbiAgICBCcmlkZ2UgPHwtLSBMb2NhbEJyaWRnZVxuICAgIExvY2FsQnJpZGdlIDogdXNlZCBhcyBtb2NrIGR1cmluZyBhcHBzIHRlc3RzXG4gICAgV2ViU29ja2V0QnJpZGdlIDogY291bGQgYmUgZGV2ZWxvcGVkIGluIGZ1dHVyZVxuIiwibWVybWFpZCI6eyJ0aGVtZSI6ImZvcmVzdCJ9fQ)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG4gICAgQnJpZGdlIDx8LS0gUG9zdE1lc3NhZ2VCcmlkZ2VcbiAgICBCcmlkZ2UgPHwtLSBXZWJTb2NrZXRCcmlkZ2VcbiAgICBCcmlkZ2UgPHwtLSBMb2NhbEJyaWRnZVxuICAgIExvY2FsQnJpZGdlIDogdXNlZCBhcyBtb2NrIGR1cmluZyBhcHBzIHRlc3RzXG4gICAgV2ViU29ja2V0QnJpZGdlIDogY291bGQgYmUgZGV2ZWxvcGVkIGluIGZ1dHVyZVxuIiwibWVybWFpZCI6eyJ0aGVtZSI6ImZvcmVzdCJ9fQ)
 
-There is also a number of `LocalBridge` implementations defined in the apps repo: [@screencloud/apps](https://github.com/screencloud/apps) as a way to mock a `PostMessageBridge` during tests. They are used as an easier way to work around creating `iframes` in tests, since they can just be injected as a replacement for the default `PostMessageBridge`. A basic version looks like this:
+There is also a number of `LocalBridge` implementations defined in the [@screencloud/apps](https://github.com/screencloud/apps) repo as a way to mock a `PostMessageBridge` during tests. They are used as an easier way to work around creating `iframes` in tests, since they can just be injected as a replacement for the default `PostMessageBridge`. A basic version looks like this:
 
 ``` javascript
 class LocalBridge {
@@ -64,12 +64,7 @@ class LocalBridge {
   }
 }
 ```
-classDiagram
-    Bridge <|-- PostMessageBridge
-    Bridge <|-- WebSocketBridge
-    Bridge <|-- LocalBridge
-    LocalBridge : used as mock during apps tests
-    WebSocketBridge : could be developed in future
+
 
 PostMessageBridge is intended to be as dumb as possible, and thus is quite loosely typed. All of the type checking happens on the actual messages themselves, in the classes that inherit from `MessageApp`
 
