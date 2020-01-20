@@ -130,6 +130,10 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected handleMessageEvent = (event: MessageEvent): void => {
+        if (!this.isGoodOrigin(event.origin)) {
+            return;
+        }
+
         // source is unexpected?
         if (event.source !== this.target) {
             return;
