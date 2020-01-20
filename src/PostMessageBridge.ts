@@ -168,4 +168,26 @@ export class PostMessageBridge extends Bridge {
             this.eventListenersAdded = false;
         }
     }
+
+    private isGoodOrigin(origin: string) {
+        // Ideally this could also be gotten from app manifest `start_url`,
+        // but we do not use that ourselves except as relative URL
+        const validPostMessageDomains = [
+            "https://apps-services.screencloudapp.com/",
+            "https://apps-backends-production.screen.cloud/",
+            "https://apps-services.staging.screencloudapp.com/",
+            "https://apps-backends-staging.screen.cloud/",
+            "https://studio.staging.next.sc/",
+            "https://studio.edge.next.sc/",
+            "https://studio.screencloud.com/"
+        ];
+
+        // Be careful to escape every "."
+        const escapeDotsAndConcat = validPostMessageDomains
+            .map((domain) => domain.replace(/\./gi, "."))
+            .join("|");
+        const re = RegExp(`^(${escapeDotsAndConcat})$`, "i");
+
+        return re.test(origin);
+    }
 }
