@@ -82,7 +82,7 @@ export class PostMessageBridge extends Bridge {
                 resolve();
             }),
             send: (request: string) => {
-                this.target.postMessage(request, "*");
+                PostMessageBridge.validPostMessageDomains.forEach((domain) => this.target.postMessage(request, domain));
             },
             timeout,
         });
