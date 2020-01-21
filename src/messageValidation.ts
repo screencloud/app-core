@@ -4,7 +4,7 @@ import isString from "lodash/isString";
 import {IMessage, IMessageHandlers} from "./MessageApp";
 
 /**
- * Returns true if obj is a plain object implementing IMessageAppHandlers
+ * Returns true if obj is a plain object implementing IMessageHandlers
  */
 export function isValidMessageHandlerCollection(obj: any): obj is IMessageHandlers {
     return isPlainObject(obj)
