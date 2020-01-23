@@ -27,27 +27,43 @@ export function encodePostMessageBridgeCommand(type: PostMessageBridgeCommandTyp
     return `___${JSON.stringify({type, data})}`;
 }
 
-export class PostMessageBridge extends Bridge {
-    // Note: terminating "/" or port number is mandatory
-    private static validPostMessageDomains = [
-        "https://apps-services.screencloudapp.com/",
-        "https://apps-backends-production.screen.cloud/",
-        "https://apps-services.staging.screencloudapp.com/",
-        "https://apps-backends-staging.screen.cloud/",
-        "https://screencloud-testing.auth0.com/",
-        "https://authenticate.next.sc/",
-        "https://studio.dev.next.sc:3000",
-        "https://studio.dev.next.sc/",
-        "https://studio.edge.next.sc/",
-        "https://studio.staging.next.sc/",
-        "https://studio.screencloud.com/",
-        "https://mc.dev.next.sc:3001",
-        "https://mc.dev.next.sc/",
-        "https://mc.edge.next.sc/",
-        "https://mc.staging.next.sc/",
-        "https://mc.screencloud.com/"
-    ];
+export interface IVerifyDomain {
+    origin: string;
+    validDomains: string[];
+}
 
+// note: terminating "/" or port number is mandatory
+const validMessageDomains = [
+    "https://apps-services.screencloudapp.com/", //
+    "https://apps-backends-production.screen.cloud/",
+    "https://apps-services.staging.screencloudapp.com/",
+    "https://apps-backends-staging.screen.cloud/",
+    "https://screencloud-testing.auth0.com/",
+    "https://authenticate.next.sc/",
+    "https://studio.dev.next.sc:3000",
+    "https://studio.dev.next.sc/",
+    "https://studio.edge.next.sc/",
+    "https://studio.staging.next.sc/",
+    "https://studio.screencloud.com/",
+    "https://mc.dev.next.sc:3001",
+    "https://mc.dev.next.sc/",
+    "https://mc.edge.next.sc/",
+    "https://mc.staging.next.sc/",
+    "https://mc.screencloud.com/",
+];
+
+// Verify if origin URL is in the allowed validDomains list to send/receive messages
+export function defaultVerifyDomain({ origin, validDomains = validMessageDomains }: IVerifyDomain) {
+    const escapedAndConcattedDomains = validDomains
+        .map(domain => domain.replace(/\./gi, "\\."))
+        .join("|");
+
+    const re = RegExp(`^(${escapedAndConcattedDomains})$`, "i");
+
+    return re.test(origin);
+}
+
+export class PostMessageBridge extends Bridge {
     protected targetWindow: Window | null = null;
     protected sourceWindow: Window | null = null;
 
@@ -189,18 +205,5 @@ export class PostMessageBridge extends Bridge {
             this.sourceWindow.removeEventListener("unload", this.handleUnloadEvent);
             this.eventListenersAdded = false;
         }
-    }
-
-    private isGoodOrigin(origin: string) {
-        // Ideally this could also be gotten from app manifest `start_url`,
-        // but we do not use that ourselves except as relative URL
-
-        // Be careful to escape every "."
-        const escapeDotsAndConcat = PostMessageBridge.validPostMessageDomains
-            .map((domain) => domain.replace(/\./gi, "."))
-            .join("|");
-        const re = RegExp(`^(${escapeDotsAndConcat})$`, "i");
-
-        return re.test(origin);
     }
 }
