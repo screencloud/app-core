@@ -1,5 +1,5 @@
-import {Bridge, BridgeState} from "./Bridge";
-import * as config from './config'
+import { Bridge, BridgeState } from "./Bridge";
+import * as config from "./config";
 
 export enum PostMessageBridgeCommandTypes {
     Connect = "CONNECT",
@@ -30,11 +30,14 @@ export function encodePostMessageBridgeCommand(type: PostMessageBridgeCommandTyp
 
 export interface IVerifyDomain {
     origin: string;
-    validDomains: string[];
+    validDomains?: string[];
 }
 
 // Verify if origin URL is in the allowed validDomains list to send/receive messages
-export function defaultVerifyDomain({origin, validDomains = config.validMessageDomains}: IVerifyDomain) {
+export function defaultVerifyDomain({
+    origin,
+    validDomains = config.validMessageDomains,
+}: IVerifyDomain) {
     const escapedAndConcattedDomains = validDomains
         .map((domain) => domain.replace(/\./gi, "\\."))
         .join("|");
@@ -53,6 +56,7 @@ export class PostMessageBridge extends Bridge {
     protected resolveConnect?: () => void = undefined;
 
     private _origin?: string;
+    private verifyDomain: (options: IVerifyDomain) => boolean;
 
     public get origin() {
         return this._origin;
@@ -92,7 +96,9 @@ export class PostMessageBridge extends Bridge {
                 // Send one message to every domain in whitelist, because we're not
                 // sure what's on the other end. Messages not intended for recipient
                 // PostMessageBridge will just be lost in the ether.
-                config.validMessageDomains.forEach((domain) => this.target.postMessage(request, domain));
+                config.validMessageDomains.forEach((domain) =>
+                    this.target.postMessage(request, domain),
+                );
             },
             timeout,
         });
@@ -150,7 +156,7 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected handleMessageEvent = (event: MessageEvent): void => {
-        if (!this.verifyDomain(event.origin)) {
+        if (!this.verifyDomain({ origin: event.origin })) {
             return;
         }
 
