@@ -156,16 +156,16 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected handleMessageEvent = (event: MessageEvent): void => {
-        if (!this.verifyDomain({ origin: event.origin })) {
+        const { origin, source, data } = event;
+
+        if (!this.verifyDomain({ origin })) {
             return;
         }
 
         // source is unexpected?
-        if (event.source !== this.target) {
+        if (source !== this.target) {
             return;
         }
-
-        const {data} = event;
 
         const command = tryDecodePostMessageBridgeCommand(data);
 
