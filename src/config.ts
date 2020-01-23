@@ -1,5 +1,5 @@
+// Note: terminating "/" or port number is mandatory
 export const validMessageDomains = [
-    // Note: terminating "/" or port number is mandatory
     "https://apps-services.screencloudapp.com/",
     "https://apps-backends-production.screen.cloud/",
     "https://apps-services.staging.screencloudapp.com/",
@@ -15,5 +15,5 @@ export const validMessageDomains = [
     "https://mc.dev.next.sc/",
     "https://mc.edge.next.sc/",
     "https://mc.staging.next.sc/",
-    "https://mc.screencloud.com/"
+    "https://mc.screencloud.com/",
 ];

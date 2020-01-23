@@ -1,4 +1,5 @@
 import {Bridge, BridgeState} from "./Bridge";
+import * as config from './config'
 
 export enum PostMessageBridgeCommandTypes {
     Connect = "CONNECT",
@@ -32,30 +33,10 @@ export interface IVerifyDomain {
     validDomains: string[];
 }
 
-// note: terminating "/" or port number is mandatory
-const validMessageDomains = [
-    "https://apps-services.screencloudapp.com/", //
-    "https://apps-backends-production.screen.cloud/",
-    "https://apps-services.staging.screencloudapp.com/",
-    "https://apps-backends-staging.screen.cloud/",
-    "https://screencloud-testing.auth0.com/",
-    "https://authenticate.next.sc/",
-    "https://studio.dev.next.sc:3000",
-    "https://studio.dev.next.sc/",
-    "https://studio.edge.next.sc/",
-    "https://studio.staging.next.sc/",
-    "https://studio.screencloud.com/",
-    "https://mc.dev.next.sc:3001",
-    "https://mc.dev.next.sc/",
-    "https://mc.edge.next.sc/",
-    "https://mc.staging.next.sc/",
-    "https://mc.screencloud.com/",
-];
-
 // Verify if origin URL is in the allowed validDomains list to send/receive messages
-export function defaultVerifyDomain({ origin, validDomains = validMessageDomains }: IVerifyDomain) {
+export function defaultVerifyDomain({origin, validDomains = config.validMessageDomains}: IVerifyDomain) {
     const escapedAndConcattedDomains = validDomains
-        .map(domain => domain.replace(/\./gi, "\\."))
+        .map((domain) => domain.replace(/\./gi, "\\."))
         .join("|");
 
     const re = RegExp(`^(${escapedAndConcattedDomains})$`, "i");
@@ -89,6 +70,7 @@ export class PostMessageBridge extends Bridge {
         targetWindow: Window | null = null,
         sourceWindow: Window = window,
         timeout: number = 1000,
+        verifyDomain: (options: IVerifyDomain) => boolean = defaultVerifyDomain,
     ) {
         super({
             connect: (awaitConnect?: boolean) => new Promise((resolve, reject) => {
@@ -110,11 +92,12 @@ export class PostMessageBridge extends Bridge {
                 // Send one message to every domain in whitelist, because we're not
                 // sure what's on the other end. Messages not intended for recipient
                 // PostMessageBridge will just be lost in the ether.
-                validMessageDomains.forEach(domain => this.target.postMessage(request, domain));
+                config.validMessageDomains.forEach((domain) => this.target.postMessage(request, domain));
             },
             timeout,
         });
 
+        this.verifyDomain = verifyDomain;
         this.targetWindow = targetWindow;
         this.sourceWindow = sourceWindow;
 
