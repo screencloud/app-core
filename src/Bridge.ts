@@ -4,7 +4,6 @@ import isFunction from "lodash/isFunction";
 import isNumber from "lodash/isNumber";
 import isObjectLike from "lodash/isObjectLike";
 import isPlainObject from "lodash/isPlainObject";
-import {validMessageDomains} from "./config";
 import {IMessage} from "./MessageApp";
 
 export interface IBridge {
@@ -54,18 +53,15 @@ export interface IBridgeOptions {
     send: (request: string) => void;
     encode?: (obj: IBridgeMessage) => string;
     decode?: (str: string) => IBridgeMessage;
-    verifyDomain?: (options: { origin: string, validDomains: string[] }) => boolean;
 }
 
 export function isBridgeOptions(obj: any): obj is IBridgeOptions {
     return (
         isObjectLike(obj) &&
         // required functions
-        ["connect", "disconnect", "send"].every((methodName) =>
-            isFunction(obj[methodName]),
-        ) &&
+        ["connect", "disconnect", "send"].every((methodName) => isFunction(obj[methodName])) &&
         // optional functions
-        ["encode", "decode", "verifyDomain"].every(
+        ["encode", "decode"].every(
             (methodName) => obj[methodName] === undefined || isFunction(obj[methodName]),
         ) &&
         isNumber(obj.timeout) &&
@@ -100,21 +96,6 @@ export function isBridge(obj: any): obj is IBridge {
 
     return requiredProps.every((propName) => hasIn(obj, propName) && !isFunction(obj[propName]))
         && requiredFuncs.every((funcName) => isFunction(obj[funcName]));
-}
-
-export interface IVerifyDomain {
-    origin: string;
-    validDomains: string[];
-}
-
-// Verify if origin URL is in the allowed validDomains list to send/receive messages
-export function defaultVerifyDomain({origin, validDomains = validMessageDomains}: IVerifyDomain) {
-    const escapedAndConcattedDomains = validDomains
-        .map((domain) => domain.replace(/\./gi, "\."))
-        .join("|");
-    const re = RegExp(`^(${escapedAndConcattedDomains})$`, "i");
-
-    return re.test(origin);
 }
 
 export enum BridgeState {
@@ -154,8 +135,6 @@ export class Bridge implements IBridge {
         if (!isBridgeOptions(options)) {
             throw new Error("invalid argument options");
         }
-
-        options.verifyDomain = options.verifyDomain || defaultVerifyDomain;
 
         this.options = options;
     }
