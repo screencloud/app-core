@@ -150,7 +150,7 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected handleMessageEvent = (event: MessageEvent): void => {
-        if (!this.isGoodOrigin(event.origin)) {
+        if (!this.verifyDomain(event.origin)) {
             return;
         }
 
