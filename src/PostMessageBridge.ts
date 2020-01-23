@@ -107,7 +107,10 @@ export class PostMessageBridge extends Bridge {
                 resolve();
             }),
             send: (request: string) => {
-                PostMessageBridge.validPostMessageDomains.forEach((domain) => this.target.postMessage(request, domain));
+                // Send one message to every domain in whitelist, because we're not
+                // sure what's on the other end. Messages not intended for recipient
+                // PostMessageBridge will just be lost in the ether.
+                validMessageDomains.forEach(domain => this.target.postMessage(request, domain));
             },
             timeout,
         });
