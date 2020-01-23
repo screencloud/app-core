@@ -1,5 +1,6 @@
 // Note: terminating "/" or port number is mandatory
 export const validMessageDomains = [
+    "https://js.stripe.com/",
     "https://apps-services.screencloudapp.com/",
     "https://apps-backends-production.screen.cloud/",
     "https://apps-services.staging.screencloudapp.com/",
