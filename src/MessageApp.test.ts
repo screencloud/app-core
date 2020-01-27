@@ -81,7 +81,11 @@ test("MessageApp.connect() relays bridge.connect and injects a handler", (done) 
 });
 
 test("MessageApp.on()", (done) => {
-    const app = new MessageApp({}, fakeBridge);
+    const app = new MessageApp({
+        foo: () => {
+            // ...
+        },
+    }, fakeBridge);
 
     // invalid handler
     expect(() => {
@@ -100,7 +104,11 @@ test("MessageApp.on()", (done) => {
 });
 
 test("MessageApp.receive()", (done) => {
-    const app = new MessageApp({}, fakeBridge);
+    const app = new MessageApp({
+        foo: () => {
+            // ...
+        },
+    }, fakeBridge);
 
     // invalid message
     expect(() => {

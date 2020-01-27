@@ -12,8 +12,10 @@ export interface IMessage<Payload = any, Type = any, Meta = any> {
     meta?: Meta;
 }
 
+export type IPayload = (payload: void | any) => void;
+
 export interface IMessageHandlers {
-    [index: string]: (payload: void | any) => void;
+    [index: string]: IPayload;
 }
 
 export interface IMessageApp<MessageTypes = any> {
@@ -27,7 +29,7 @@ export interface IMessageApp<MessageTypes = any> {
         overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result>;
 
-    on(messageType: string, handler: (payload: void | any) => void): this;
+    on<K extends keyof IMessageHandlers>(messageType: K, handler: IPayload): this;
 
     off(handler: (payload: void | any) => void): this;
 
@@ -69,15 +71,14 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
         this.bridge = bridge;
     }
 
-    public on(messageType: string, handler: (payload: void | any) => void): this {
+    public on<K extends keyof MessageHandlers>(messageType: K, handler: IPayload): this {
         if (!isFunction(handler)) {
             throw new Error("handler must be callable or undefined");
         }
-
         if (!this.handlers[messageType]) {
-            this.handlers[messageType] = [handler];
+            this.handlers[messageType] = [handler as any];
         } else {
-            this.handlers[messageType]!.push(handler);
+            this.handlers[messageType]!.push(handler as any);
         }
 
         return this;
@@ -86,7 +87,7 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     public off(handler: (payload: void | any) => void) {
         Object
             .keys(this.handlers)
-            .forEach((k) => {
+            .forEach(<K extends keyof IMessageHandlers>(k: K) => {
                 this.handlers[k] = this.handlers[k]!
                     .filter((x: any) => x !== handler);
             });
