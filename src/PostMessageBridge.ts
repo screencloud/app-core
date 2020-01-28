@@ -1,4 +1,3 @@
-import isString from "lodash/isString";
 import {Bridge, BridgeState} from "./Bridge";
 
 export enum PostMessageBridgeCommandTypes {
@@ -12,8 +11,9 @@ export interface IPostMessageBridgeCommand<T = never> {
     data: T;
 }
 
-export function tryDecodePostMessageBridgeCommand(obj: any): undefined | IPostMessageBridgeCommand {
-    if (!isString(obj) || !obj.startsWith("___")) {
+// Our convention is that commands start with three underscores '___'
+export function tryDecodePostMessageBridgeCommand(obj: unknown): undefined | IPostMessageBridgeCommand {
+    if (typeof obj !== "string" || obj.substr(0, 3) !== "___") {
         return undefined;
     }
 
@@ -21,7 +21,7 @@ export function tryDecodePostMessageBridgeCommand(obj: any): undefined | IPostMe
 }
 
 export function encodePostMessageBridgeCommand(type: PostMessageBridgeCommandTypes, data?: any): string {
-    if (!type || !isString(type)) {
+    if (!type || typeof type !== "string") {
         throw new Error(`command must be a string`);
     }
     return `___${JSON.stringify({type, data})}`;
