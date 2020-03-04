@@ -100,6 +100,8 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     }
 
     public disconnect(): Promise<void> {
+        this.handlers = {};
+
         return this.bridge.disconnect();
     }
 
