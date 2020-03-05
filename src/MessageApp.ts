@@ -2,9 +2,9 @@ import isArray from "lodash/isArray";
 import isFunction from "lodash/isFunction";
 import isString from "lodash/isString";
 import uniq from "lodash/uniq";
-import {IBridge, IBridgeOptions, isBridge} from "./Bridge";
-import {isMessage} from "./messageValidation";
-import {Arrayfied} from "./utils";
+import { IBridge, IBridgeOptions, isBridge } from "./Bridge";
+import { isMessage } from "./messageValidation";
+import { Arrayfied } from "./utils";
 
 export interface IMessage<Payload = any, Type = any, Meta = any> {
     type: Type;
@@ -100,7 +100,9 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     }
 
     public disconnect(): Promise<void> {
-        return this.bridge.disconnect();
+        return this.bridge.disconnect().then(() => {
+            this.handlers = {};
+        });
     }
 
     public emit<Message extends IMessage>(message: Message): void {
@@ -130,7 +132,7 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
             throw new Error("invalid message");
         }
 
-        const {type, payload} = message;
+        const { type, payload } = message;
 
         // typecast to any due to typescript inference error
         // TS2349: Cannot invoke an expression whose type lacks a request signature.
