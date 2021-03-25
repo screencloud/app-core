@@ -140,14 +140,14 @@ export class PostMessageBridge extends Bridge {
         } else {
             this.receive(data);
         }
-    };
+    }
 
     protected handleUnloadEvent = () => {
         this.removeListeners();
         this.targetWindow = null;
         this.sourceWindow = null;
         this.handleDisconnect();
-    };
+    }
 
     protected addListeners(): void {
         if (!this.eventListenersAdded && this.sourceWindow) {
