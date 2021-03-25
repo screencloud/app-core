@@ -3,5 +3,5 @@
   "jsxBracketSameLine": false,
   "singleQuote": false,
   "tabWidth": 4,
-  "trailingComma": "es5"
+  "trailingComma": "all"
 }

@@ -47,7 +47,7 @@ test("tryDecodePostMessageBridgeCommand()", () => {
     expect(tryDecodePostMessageBridgeCommand("foo")).toBeFalsy();
     expect(tryDecodePostMessageBridgeCommand(JSON.stringify(PostMessageBridgeCommandTypes.Connect))).toBeFalsy();
     expect(
-        tryDecodePostMessageBridgeCommand(JSON.stringify({ type: PostMessageBridgeCommandTypes.Connect }))
+        tryDecodePostMessageBridgeCommand(JSON.stringify({ type: PostMessageBridgeCommandTypes.Connect })),
     ).toBeFalsy();
 
     // true
@@ -93,7 +93,7 @@ describe("PostMessageBridge", () => {
                     sourceWindow.postMessage(
                         encodePostMessageBridgeCommand(PostMessageBridgeCommandTypes.ConnectSuccess),
                         "*",
-                        targetWindow as any
+                        targetWindow as any,
                     );
                 }, 50);
             } else if (command && command.type === PostMessageBridgeCommandTypes.Disconnect) {
@@ -207,7 +207,7 @@ describe("PostMessageBridge", () => {
                         expect(result).toBe("incomingSuccess");
                         // (console).log("incomingSuccess received");
                     }),
-                ])
+                ]),
             )
             .then(() => done());
     }, 100000);

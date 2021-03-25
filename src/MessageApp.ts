@@ -24,7 +24,7 @@ export interface IMessageApp<MessageTypes = any> {
 
     request<Message extends IMessage = IMessage, Result = any>(
         message: IMessage,
-        overrideOptions?: Partial<IBridgeOptions>
+        overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result>;
 
     on(messageType: string, handler: (payload: void | any) => void): this;
@@ -106,7 +106,7 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
 
     public request<Message extends IMessage = any, Result = any>(
         message: Message,
-        overrideOptions?: Partial<IBridgeOptions>
+        overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result> {
         if (!isMessage(message)) {
             throw new Error("invalid message");

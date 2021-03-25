@@ -55,8 +55,8 @@ test(`new MessageApp() constructor`, () => {
                 bar: () => undefined,
                 foo: () => undefined, // <= invalid handler
             },
-            fakeBridge
-        )
+            fakeBridge,
+        ),
     ).toThrow();
 
     // should work!
@@ -66,8 +66,8 @@ test(`new MessageApp() constructor`, () => {
                 {
                     bar: () => undefined,
                 },
-                fakeBridge
-            )
+                fakeBridge,
+            ),
     ).not.toThrow();
 });
 
@@ -80,7 +80,7 @@ test("MessageApp.connect() relays bridge.connect and injects a handler", (done) 
                 expect(isFunction(handler)).toBeTruthy();
                 return Promise.resolve();
             },
-        }
+        },
     );
 
     app.connect().then(done);
@@ -150,7 +150,7 @@ test("MessageApp.isConnected()", () => {
         {
             ...fakeBridge,
             isConnected: 17 as any,
-        }
+        },
     );
 
     expect(app.isConnected).toEqual(app.bridge.isConnected);
@@ -168,7 +168,7 @@ test("MessageApp.emit()", () => {
             send: (message: any) => {
                 expect(message).toEqual({ data: fakeMessage });
             },
-        }
+        },
     );
 
     app.emit(fakeMessage);
@@ -187,7 +187,7 @@ test("MessageApp.request()", async (done) => {
                 expect(message).toEqual(fakeMessage);
                 return Promise.resolve(() => done()) as any;
             },
-        }
+        },
     );
 
     // valid message

@@ -70,7 +70,7 @@ test(`isBridge()`, () => {
             ...validBridge,
             otherMethod: () => "bar",
             someExtraProp: 15,
-        })
+        }),
     ).toBeTruthy();
 
     // simple false checks
@@ -142,7 +142,7 @@ describe("Bridge", () => {
                 disconnect: () => Promise.reject(""),
                 send: () => undefined,
                 timeout: 10,
-            })
+            }),
         ).toBeInstanceOf(Bridge);
     });
 
@@ -288,7 +288,7 @@ describe("Bridge", () => {
                 bridge.send({
                     data: "foo",
                     referenceId: 17,
-                })
+                }),
             );
     });
 

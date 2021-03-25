@@ -16,7 +16,7 @@ export interface IBridge {
     connect(
         handler: (message: IMessage) => undefined | Promise<any>,
         awaitConnection?: boolean,
-        attemptsNumber?: number
+        attemptsNumber?: number,
     ): Promise<void>;
 
     /*
@@ -34,7 +34,7 @@ export interface IBridge {
      */
     request<Message extends IMessage = any, Result = any>(
         message: Message,
-        overrideOptions?: Partial<IBridgeOptions>
+        overrideOptions?: Partial<IBridgeOptions>,
     ): Promise<Result>;
 }
 
@@ -138,7 +138,7 @@ export class Bridge implements IBridge {
     public connect(
         handler: (message: IMessage<any, any>) => undefined | Promise<any>,
         awaitConnection: boolean = false,
-        attemptsNumber: number = 1
+        attemptsNumber: number = 1,
     ): Promise<void> {
         if (!isFunction(handler)) {
             throw new Error("invalid argument: handler is not callable");
@@ -230,7 +230,7 @@ export class Bridge implements IBridge {
                 this.encode({
                     data,
                     requestId,
-                })
+                }),
             );
         });
     }
