@@ -12,7 +12,8 @@
     "tslint:fix": "npm run tslint -s -- --fix",
     "test": "jest --coverage",
     "ts-jest": "ts-jest",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "format": "prettier --write \"src/**/*.{ts,json}\""
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +26,7 @@
     "@types/node": "^10.12.10",
     "jest": "^23.6.0",
     "merge": "^1.2.1",
+    "prettier": "^2.2.1",
     "rimraf": "^2.6.2",
     "semantic-release": "^15.12.1",
     "ts-jest": "^23.10.5",

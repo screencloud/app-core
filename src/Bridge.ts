@@ -4,18 +4,17 @@ import isFunction from "lodash/isFunction";
 import isNumber from "lodash/isNumber";
 import isObjectLike from "lodash/isObjectLike";
 import isPlainObject from "lodash/isPlainObject";
-import {IMessage} from "./MessageApp";
+import { IMessage } from "./MessageApp";
 
 export interface IBridge {
-
     readonly isConnected: boolean;
     readonly isConnecting: boolean;
 
     /*
      * initializes connection to the app container. Requires a handler to be passed in
-    */
+     */
     connect(
-        handler: (message: IMessage) => (undefined | Promise<any>),
+        handler: (message: IMessage) => undefined | Promise<any>,
         awaitConnection?: boolean,
         attemptsNumber?: number,
     ): Promise<void>;
@@ -56,23 +55,26 @@ export interface IBridgeOptions {
 }
 
 export function isBridgeOptions(obj: any): obj is IBridgeOptions {
-    return isObjectLike(obj)
+    return (
+        isObjectLike(obj) &&
         // required functions
-        && ["connect", "disconnect", "send"]
-            .every((methodName) => isFunction(obj[methodName]))
+        ["connect", "disconnect", "send"].every((methodName) => isFunction(obj[methodName])) &&
         // optional functions
-        && ["encode", "decode"]
-            .every((methodName) => obj[methodName] === undefined || isFunction(obj[methodName]))
-        && isNumber(obj.timeout) && obj.timeout > 0;
+        ["encode", "decode"].every((methodName) => obj[methodName] === undefined || isFunction(obj[methodName])) &&
+        isNumber(obj.timeout) &&
+        obj.timeout > 0
+    );
 }
 
 export function isBridgeMessage(obj: any): obj is IBridgeMessage {
-    return isPlainObject(obj)
-        && Object.keys(obj).every((key) => ["requestId", "referenceId", "data", "isError"].includes(key))
-        && has(obj, "data")
-        && (obj.requestId === undefined || isNumber(obj.requestId))
-        && (obj.referenceId === undefined || isNumber(obj.referenceId))
-        && (obj.isError === undefined || obj.isError === false || obj.isError === true);
+    return (
+        isPlainObject(obj) &&
+        Object.keys(obj).every((key) => ["requestId", "referenceId", "data", "isError"].includes(key)) &&
+        has(obj, "data") &&
+        (obj.requestId === undefined || isNumber(obj.requestId)) &&
+        (obj.referenceId === undefined || isNumber(obj.referenceId)) &&
+        (obj.isError === undefined || obj.isError === false || obj.isError === true)
+    );
 }
 
 export function isBridge(obj: any): obj is IBridge {
@@ -80,19 +82,14 @@ export function isBridge(obj: any): obj is IBridge {
         return false;
     }
 
-    const requiredProps = [
-        "isConnected",
-        "isConnecting",
-    ];
+    const requiredProps = ["isConnected", "isConnecting"];
 
-    const requiredFuncs = [
-        "connect",
-        "disconnect",
-        "send",
-    ];
+    const requiredFuncs = ["connect", "disconnect", "send"];
 
-    return requiredProps.every((propName) => hasIn(obj, propName) && !isFunction(obj[propName]))
-        && requiredFuncs.every((funcName) => isFunction(obj[funcName]));
+    return (
+        requiredProps.every((propName) => hasIn(obj, propName) && !isFunction(obj[propName])) &&
+        requiredFuncs.every((funcName) => isFunction(obj[funcName]))
+    );
 }
 
 export enum BridgeState {
@@ -104,7 +101,6 @@ export enum BridgeState {
 }
 
 export class Bridge implements IBridge {
-
     protected state: BridgeState = BridgeState.Disconnected;
 
     public get isConnected(): boolean {
@@ -121,9 +117,9 @@ export class Bridge implements IBridge {
 
     protected promiseResolvers: {
         [referenceId: number]: {
-            resolve: (result: any) => void | undefined,
-            reject: (reason: any) => void | undefined,
-        },
+            resolve: (result: any) => void | undefined;
+            reject: (reason: any) => void | undefined;
+        };
     } = {};
 
     protected options: IBridgeOptions;
@@ -151,9 +147,7 @@ export class Bridge implements IBridge {
             throw new Error("invalid state");
         }
 
-        this.state = awaitConnection
-            ? BridgeState.AwaitingConnect
-            : BridgeState.Connecting;
+        this.state = awaitConnection ? BridgeState.AwaitingConnect : BridgeState.Connecting;
 
         return new Promise((resolve, reject) => {
             const makeAttempt = (currentAttempt: number): void => {
@@ -161,7 +155,8 @@ export class Bridge implements IBridge {
                     return resolve();
                 }
 
-                this.options.connect(awaitConnection)
+                this.options
+                    .connect(awaitConnection)
                     .then(() => resolve())
                     .catch((err) => {
                         if (currentAttempt >= attemptsNumber) {
@@ -197,18 +192,13 @@ export class Bridge implements IBridge {
         });
     }
 
-    public emit<Data = any>(
-        data: Data,
-    ): void {
+    public emit<Data = any>(data: Data): void {
         this.send({
             data,
         });
     }
 
-    public request<Data = any, Result = any>(
-        data: Data,
-        overrideOptions?: Partial<IBridgeOptions>,
-    ): Promise<Result> {
+    public request<Data = any, Result = any>(data: Data, overrideOptions?: Partial<IBridgeOptions>): Promise<Result> {
         const requestId = ++this.lastRequestId;
         const options = {
             ...this.options,
@@ -230,17 +220,18 @@ export class Bridge implements IBridge {
 
             if (options.timeout !== -1) {
                 setTimeout(() => {
-                    if (this.promiseResolvers[ requestId ]) {
-                        this.promiseResolvers[ requestId ].reject(new Error("Request timeout."));
+                    if (this.promiseResolvers[requestId]) {
+                        this.promiseResolvers[requestId].reject(new Error("Request timeout."));
                     }
                 }, options.timeout);
             }
 
-            this.options
-                .send(this.encode({
+            this.options.send(
+                this.encode({
                     data,
                     requestId,
-                }));
+                }),
+            );
         });
     }
 
@@ -249,8 +240,7 @@ export class Bridge implements IBridge {
             throw new Error("bridge is not connected");
         }
 
-        this.options
-            .send(this.encode(bridgeMessage));
+        this.options.send(this.encode(bridgeMessage));
     }
 
     protected handleDisconnect(): void {
@@ -265,15 +255,11 @@ export class Bridge implements IBridge {
     }
 
     protected encode(obj: IBridgeMessage): string {
-        return this.options.encode
-            ? this.options.encode(obj)
-            : JSON.stringify(obj);
+        return this.options.encode ? this.options.encode(obj) : JSON.stringify(obj);
     }
 
     protected decode(str: string): IBridgeMessage {
-        return this.options.decode
-            ? this.options.decode(str)
-            : JSON.parse(str);
+        return this.options.decode ? this.options.decode(str) : JSON.parse(str);
     }
 
     protected receive(str: string): void {
@@ -299,7 +285,7 @@ export class Bridge implements IBridge {
     }
 
     protected handleReceivedResponse(message: IBridgeMessage): void {
-        const {referenceId} = message;
+        const { referenceId } = message;
         if (!referenceId && referenceId !== 0) {
             throw new Error("response is missing referenceId");
         }
@@ -326,12 +312,14 @@ export class Bridge implements IBridge {
             throw new Error("promise expected. Is your handler implemented correctly?");
         }
 
-        promise.then((data) => {
-            this.send({
-                data,
-                referenceId: requestId,
-            });
-        }).catch(() => null);
+        promise
+            .then((data) => {
+                this.send({
+                    data,
+                    referenceId: requestId,
+                });
+            })
+            .catch(() => null);
 
         promise.catch((data) => {
             this.send({

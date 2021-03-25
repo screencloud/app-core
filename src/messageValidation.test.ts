@@ -1,4 +1,4 @@
-import {isMessage, isValidMessageHandlerCollection} from "./messageValidation";
+import { isMessage, isValidMessageHandlerCollection } from "./messageValidation";
 
 // isMessage() => false
 [
