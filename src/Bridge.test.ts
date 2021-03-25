@@ -65,19 +65,21 @@ test(`isBridge()`, () => {
     };
     expect(isBridge(validBridge)).toBeTruthy();
     // noinspection JSUnusedGlobalSymbols
-    expect(isBridge({
-        ...validBridge,
-        otherMethod: () => "bar",
-        someExtraProp: 15,
-    })).toBeTruthy();
+    expect(
+        isBridge({
+            ...validBridge,
+            otherMethod: () => "bar",
+            someExtraProp: 15,
+        })
+    ).toBeTruthy();
 
     // simple false checks
     expect(isBridge(undefined)).toBeFalsy();
     expect(isBridge(null)).toBeFalsy();
     expect(isBridge(true)).toBeFalsy();
     expect(isBridge({})).toBeFalsy();
-    expect(isBridge({...validBridge, connect: 15})).toBeFalsy();
-    expect(isBridge({...validBridge, isConnecting: () => false})).toBeFalsy();
+    expect(isBridge({ ...validBridge, connect: 15 })).toBeFalsy();
+    expect(isBridge({ ...validBridge, isConnecting: () => false })).toBeFalsy();
 });
 
 test("isBridgeOptions()", () => {
@@ -131,16 +133,17 @@ test("isBridgeOptions()", () => {
 });
 
 describe("Bridge", () => {
-
     test("Bridge.constructor()", () => {
         expect(() => new Bridge(undefined as any)).toThrow();
 
-        expect(new Bridge({
-            connect: () => Promise.reject(""),
-            disconnect: () => Promise.reject(""),
-            send: () => undefined,
-            timeout: 10,
-        })).toBeInstanceOf(Bridge);
+        expect(
+            new Bridge({
+                connect: () => Promise.reject(""),
+                disconnect: () => Promise.reject(""),
+                send: () => undefined,
+                timeout: 10,
+            })
+        ).toBeInstanceOf(Bridge);
     });
 
     test("Bridge.encode()/decode()", () => {
@@ -183,14 +186,16 @@ describe("Bridge", () => {
 
     test("Bridge.connect()/disconnect()", async (done) => {
         const bridge = new Bridge({
-            connect: () => new Promise((resolve) => {
-                // connect after 5ms
-                setTimeout(() => resolve(), 5);
-            }),
-            disconnect: () => new Promise((resolve) => {
-                // disconnect after 5ms
-                setTimeout(() => resolve(), 5);
-            }),
+            connect: () =>
+                new Promise((resolve) => {
+                    // connect after 5ms
+                    setTimeout(() => resolve(), 5);
+                }),
+            disconnect: () =>
+                new Promise((resolve) => {
+                    // disconnect after 5ms
+                    setTimeout(() => resolve(), 5);
+                }),
             send: () => undefined,
             timeout: 10,
         });
@@ -198,7 +203,7 @@ describe("Bridge", () => {
         // step 1
         expect(bridge.getState()).toBe(BridgeState.Disconnected);
         let pms: Promise<any> | null = null;
-        expect(() => pms = bridge.disconnect()).not.toThrow();
+        expect(() => (pms = bridge.disconnect())).not.toThrow();
 
         Promise.resolve()
             .then(() => {
@@ -207,8 +212,7 @@ describe("Bridge", () => {
                 }
             })
             .then(() => {
-                const promise = bridge
-                    .connect(() => undefined);
+                const promise = bridge.connect(() => undefined);
                 // step
                 expect(bridge.getState()).toBe(BridgeState.Connecting);
                 return promise;
@@ -233,19 +237,22 @@ describe("Bridge", () => {
 
     test("Bridge disconnect before connection success", (done) => {
         const bridge = new Bridge({
-            connect: () => new Promise((resolve) => {
-                // connect after 20ms
-                setTimeout(() => resolve(), 20);
-            }),
-            disconnect: () => new Promise((resolve) => {
-                // disconnect after 10ms
-                setTimeout(() => resolve(), 10);
-            }),
+            connect: () =>
+                new Promise((resolve) => {
+                    // connect after 20ms
+                    setTimeout(() => resolve(), 20);
+                }),
+            disconnect: () =>
+                new Promise((resolve) => {
+                    // disconnect after 10ms
+                    setTimeout(() => resolve(), 10);
+                }),
             send: () => undefined,
             timeout: 30,
         });
 
-        bridge.connect(() => undefined)
+        bridge
+            .connect(() => undefined)
             .then(() => {
                 expect(bridge.getState()).toBe(BridgeState.Disconnected);
                 done();
@@ -264,26 +271,24 @@ describe("Bridge", () => {
         };
 
         // not connected
-        expect(() => (new Bridge({...baseOptions}))
-            .send({data: "anyData"}),
-        ).toThrow();
+        expect(() => new Bridge({ ...baseOptions }).send({ data: "anyData" })).toThrow();
 
         // send data
         const bridge = new Bridge({
             ...baseOptions,
             send: (str: string) => {
-                expect(str).toBe(JSON.stringify({data: "foo", referenceId: 17}));
+                expect(str).toBe(JSON.stringify({ data: "foo", referenceId: 17 }));
                 done();
             },
         });
 
         bridge
             .connect(() => undefined)
-            .then(() => bridge
-                .send({
+            .then(() =>
+                bridge.send({
                     data: "foo",
                     referenceId: 17,
-                }),
+                })
             );
     });
 
@@ -295,7 +300,7 @@ describe("Bridge", () => {
             timeout: 5,
         };
 
-        const bridge = new Bridge({...baseOptions});
+        const bridge = new Bridge({ ...baseOptions });
         return bridge
             .connect(() => undefined)
             .then(() => bridge.request({}))
@@ -305,10 +310,10 @@ describe("Bridge", () => {
             });
     });
     //
-// test("Bridge.request()", (t) => {
-//
-// });
-//
+    // test("Bridge.request()", (t) => {
+    //
+    // });
+    //
     test("Bridge.receive() throws", () => {
         const baseOptions: IBridgeOptions = {
             connect: () => Promise.resolve(undefined),
@@ -317,19 +322,15 @@ describe("Bridge", () => {
             timeout: 10,
         };
 
-        const bridge = new Bridge({...baseOptions});
+        const bridge = new Bridge({ ...baseOptions });
         // invalid bridge message
         expect(() => (bridge as any).receive("foo")).toThrow();
 
         // not connected
-        expect(() =>
-            (bridge as any).receive(
-                (bridge as any).encode({data: "foo"}),
-            ),
-        ).toThrow();
+        expect(() => (bridge as any).receive((bridge as any).encode({ data: "foo" }))).toThrow();
     });
 
     // test("Bridge.receive()", (t) => {
-//
-// });
+    //
+    // });
 });

@@ -1,6 +1,6 @@
 import isFunction from "lodash/isFunction";
-import {IBridge} from "./Bridge";
-import {IMessage, IMessageHandlers, isValidMessageTypeArray, MessageApp} from "./MessageApp";
+import { IBridge } from "./Bridge";
+import { IMessage, IMessageHandlers, isValidMessageTypeArray, MessageApp } from "./MessageApp";
 
 const fakeBridge: IBridge = {
     connect: () => Promise.resolve(),
@@ -32,9 +32,7 @@ test("isValidMessageTypeArray()", () => {
     expect(isValidMessageTypeArray(["ßüäö"])).toBeFalsy();
 
     // valid!
-    expect(isValidMessageTypeArray([
-        "camelCase", "PascalCase", "disconnect", "UPPER_CASE",
-    ])).toBeTruthy();
+    expect(isValidMessageTypeArray(["camelCase", "PascalCase", "disconnect", "UPPER_CASE"])).toBeTruthy();
 });
 
 test(`new MessageApp() constructor`, () => {
@@ -49,33 +47,41 @@ test(`new MessageApp() constructor`, () => {
     expect(() => new anyMessageApp([], [], fakeHandlers, {})).toThrow();
 
     // invalid handlers
-    expect(() => anyMessageApp(
-        ["bar"],
-        [],
-        {
-            bar: () => undefined,
-            foo: () => undefined, // <= invalid handler
-        },
-        fakeBridge,
-    )).toThrow();
+    expect(() =>
+        anyMessageApp(
+            ["bar"],
+            [],
+            {
+                bar: () => undefined,
+                foo: () => undefined, // <= invalid handler
+            },
+            fakeBridge
+        )
+    ).toThrow();
 
     // should work!
-    expect(() => new MessageApp(
-        {
-            bar: () => undefined,
-        },
-        fakeBridge,
-    )).not.toThrow();
+    expect(
+        () =>
+            new MessageApp(
+                {
+                    bar: () => undefined,
+                },
+                fakeBridge
+            )
+    ).not.toThrow();
 });
 
 test("MessageApp.connect() relays bridge.connect and injects a handler", (done) => {
-    const app = new MessageApp({}, {
-        ...fakeBridge,
-        connect: (handler: any) => {
-            expect(isFunction(handler)).toBeTruthy();
-            return Promise.resolve();
-        },
-    });
+    const app = new MessageApp(
+        {},
+        {
+            ...fakeBridge,
+            connect: (handler: any) => {
+                expect(isFunction(handler)).toBeTruthy();
+                return Promise.resolve();
+            },
+        }
+    );
 
     app.connect().then(done);
 });
@@ -116,7 +122,9 @@ test("MessageApp.receive()", (done) => {
     }).not.toThrow();
 
     // set a handler and remove it again
-    const throwingHandler = () => { throw new Error("should not be called"); };
+    const throwingHandler = () => {
+        throw new Error("should not be called");
+    };
     app.on("foo", throwingHandler);
     app.off(throwingHandler);
 
@@ -125,20 +133,25 @@ test("MessageApp.receive()", (done) => {
         expect(payload).toBe("bar");
         return Promise.resolve("baz");
     });
-    (app as any).receive({
-        payload: "bar",
-        type: "foo",
-    }).then((value: any) => {
-        expect(value).toEqual("baz");
-        done();
-    });
+    (app as any)
+        .receive({
+            payload: "bar",
+            type: "foo",
+        })
+        .then((value: any) => {
+            expect(value).toEqual("baz");
+            done();
+        });
 });
 
 test("MessageApp.isConnected()", () => {
-    const app = new MessageApp({}, {
-        ...fakeBridge,
-        isConnected: 17 as any,
-    });
+    const app = new MessageApp(
+        {},
+        {
+            ...fakeBridge,
+            isConnected: 17 as any,
+        }
+    );
 
     expect(app.isConnected).toEqual(app.bridge.isConnected);
 });
@@ -148,12 +161,15 @@ test("MessageApp.emit()", () => {
         payload: 666,
         type: "foo" as any,
     };
-    const app = new MessageApp({}, {
-        ...fakeBridge,
-        send: (message: any) => {
-            expect(message).toEqual({data: fakeMessage});
-        },
-    });
+    const app = new MessageApp(
+        {},
+        {
+            ...fakeBridge,
+            send: (message: any) => {
+                expect(message).toEqual({ data: fakeMessage });
+            },
+        }
+    );
 
     app.emit(fakeMessage);
 });
@@ -163,18 +179,19 @@ test("MessageApp.request()", async (done) => {
         payload: 666,
         type: "foo" as any,
     };
-    const app = new MessageApp({}, {
-        ...fakeBridge,
-        request: (message) => {
-            expect(message).toEqual(fakeMessage);
-            return Promise.resolve(() => done()) as any;
-        },
-    });
+    const app = new MessageApp(
+        {},
+        {
+            ...fakeBridge,
+            request: (message) => {
+                expect(message).toEqual(fakeMessage);
+                return Promise.resolve(() => done()) as any;
+            },
+        }
+    );
 
     // valid message
-    (app
-        .request(fakeMessage) as Promise<any>)
-        .then((doneFn: any) => doneFn());
+    (app.request(fakeMessage) as Promise<any>).then((doneFn: any) => doneFn());
 });
 
 test("MessageApp.request() throws", () => {

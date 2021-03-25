@@ -2,9 +2,9 @@ import isArray from "lodash/isArray";
 import isFunction from "lodash/isFunction";
 import isString from "lodash/isString";
 import uniq from "lodash/uniq";
-import {IBridge, IBridgeOptions, isBridge} from "./Bridge";
-import {isMessage} from "./messageValidation";
-import {Arrayfied} from "./utils";
+import { IBridge, IBridgeOptions, isBridge } from "./Bridge";
+import { isMessage } from "./messageValidation";
+import { Arrayfied } from "./utils";
 
 export interface IMessage<Payload = any, Type = any, Meta = any> {
     type: Type;
@@ -24,7 +24,7 @@ export interface IMessageApp<MessageTypes = any> {
 
     request<Message extends IMessage = IMessage, Result = any>(
         message: IMessage,
-        overrideOptions?: Partial<IBridgeOptions>,
+        overrideOptions?: Partial<IBridgeOptions>
     ): Promise<Result>;
 
     on(messageType: string, handler: (payload: void | any) => void): this;
@@ -37,14 +37,13 @@ export interface IMessageApp<MessageTypes = any> {
 }
 
 export function isValidMessageTypeArray(obj: any): obj is string[] {
-    return isArray(obj)
-        && uniq(obj).length === obj.length
-        && obj.every((v) => v && isString(v) && (/^[a-zA-Z_]+$/g).test(v));
+    return (
+        isArray(obj) && uniq(obj).length === obj.length && obj.every((v) => v && isString(v) && /^[a-zA-Z_]+$/g.test(v))
+    );
 }
 
 export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHandlers = {}>
     implements IMessageApp<MessageTypes> {
-
     public get isConnected(): boolean {
         return this.bridge.isConnected;
     }
@@ -52,13 +51,9 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     public readonly bridge: IBridge;
     protected handlers: Partial<Arrayfied<MessageHandlers>> = {};
 
-    constructor(
-        handlers: Partial<MessageHandlers>,
-        bridge: IBridge,
-    ) {
+    constructor(handlers: Partial<MessageHandlers>, bridge: IBridge) {
         // Handlers (Incoming only)
-        Object
-            .keys(handlers)
+        Object.keys(handlers)
             .filter((k) => handlers[k])
             .forEach((k) => handlers[k] && this.on(k, handlers[k]!));
 
@@ -84,19 +79,15 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
     }
 
     public off(handler: (payload: void | any) => void) {
-        Object
-            .keys(this.handlers)
-            .forEach((k) => {
-                this.handlers[k] = this.handlers[k]!
-                    .filter((x: any) => x !== handler);
-            });
+        Object.keys(this.handlers).forEach((k) => {
+            this.handlers[k] = this.handlers[k]!.filter((x: any) => x !== handler);
+        });
 
         return this;
     }
 
     public connect(awaitConnection: boolean = false, attemptsNumber: number = 1): Promise<void> {
-        return this.bridge
-            .connect((message) => this.receive(message), awaitConnection, attemptsNumber);
+        return this.bridge.connect((message) => this.receive(message), awaitConnection, attemptsNumber);
     }
 
     public disconnect(): Promise<void> {
@@ -115,7 +106,7 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
 
     public request<Message extends IMessage = any, Result = any>(
         message: Message,
-        overrideOptions?: Partial<IBridgeOptions>,
+        overrideOptions?: Partial<IBridgeOptions>
     ): Promise<Result> {
         if (!isMessage(message)) {
             throw new Error("invalid message");
@@ -130,7 +121,7 @@ export class MessageApp<MessageTypes = any, MessageHandlers extends IMessageHand
             throw new Error("invalid message");
         }
 
-        const {type, payload} = message;
+        const { type, payload } = message;
 
         // typecast to any due to typescript inference error
         // TS2349: Cannot invoke an expression whose type lacks a request signature.

@@ -1,4 +1,4 @@
-import {Bridge, BridgeState} from "./Bridge";
+import { Bridge, BridgeState } from "./Bridge";
 
 export enum PostMessageBridgeCommandTypes {
     Connect = "CONNECT",
@@ -24,11 +24,10 @@ export function encodePostMessageBridgeCommand(type: PostMessageBridgeCommandTyp
     if (!type || typeof type !== "string") {
         throw new Error(`command must be a string`);
     }
-    return `___${JSON.stringify({type, data})}`;
+    return `___${JSON.stringify({ type, data })}`;
 }
 
 export class PostMessageBridge extends Bridge {
-
     protected targetWindow: Window | null = null;
 
     protected sourceWindow: Window | null = null;
@@ -51,27 +50,25 @@ export class PostMessageBridge extends Bridge {
         return target;
     }
 
-    constructor(
-        targetWindow: Window | null = null,
-        sourceWindow: Window = window,
-        timeout: number = 1000,
-    ) {
+    constructor(targetWindow: Window | null = null, sourceWindow: Window = window, timeout: number = 1000) {
         super({
-            connect: (awaitConnect?: boolean) => new Promise((resolve, reject) => {
-                this.addListeners();
-                this.resolveConnect = resolve;
-                setTimeout(() => reject(new Error("Connection timeout.")), this.options.timeout);
-                if (!awaitConnect) {
-                    this.sendCommand(PostMessageBridgeCommandTypes.Connect);
-                }
-            }),
-            disconnect: () => new Promise((resolve) => {
-                this.removeListeners();
-                this.sendCommand(PostMessageBridgeCommandTypes.Disconnect);
-                this.targetWindow = null;
-                this.sourceWindow = null;
-                resolve();
-            }),
+            connect: (awaitConnect?: boolean) =>
+                new Promise((resolve, reject) => {
+                    this.addListeners();
+                    this.resolveConnect = resolve;
+                    setTimeout(() => reject(new Error("Connection timeout.")), this.options.timeout);
+                    if (!awaitConnect) {
+                        this.sendCommand(PostMessageBridgeCommandTypes.Connect);
+                    }
+                }),
+            disconnect: () =>
+                new Promise((resolve) => {
+                    this.removeListeners();
+                    this.sendCommand(PostMessageBridgeCommandTypes.Disconnect);
+                    this.targetWindow = null;
+                    this.sourceWindow = null;
+                    resolve();
+                }),
             send: (request: string) => {
                 this.target.postMessage(request, "*");
             },
@@ -113,8 +110,7 @@ export class PostMessageBridge extends Bridge {
     }
 
     protected receiveCommand(command: IPostMessageBridgeCommand, event: MessageEvent) {
-
-        const {type} = command;
+        const { type } = command;
 
         if (!type || !Object.values(PostMessageBridgeCommandTypes).includes(type)) {
             throw new Error(`Unrecognized command received: "${type}"`);
@@ -135,7 +131,7 @@ export class PostMessageBridge extends Bridge {
             return;
         }
 
-        const {data} = event;
+        const { data } = event;
 
         const command = tryDecodePostMessageBridgeCommand(data);
 
@@ -144,14 +140,14 @@ export class PostMessageBridge extends Bridge {
         } else {
             this.receive(data);
         }
-    }
+    };
 
     protected handleUnloadEvent = () => {
         this.removeListeners();
         this.targetWindow = null;
         this.sourceWindow = null;
         this.handleDisconnect();
-    }
+    };
 
     protected addListeners(): void {
         if (!this.eventListenersAdded && this.sourceWindow) {
